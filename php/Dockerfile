@@ -38,7 +38,7 @@ RUN mkdir -p /var/run/php
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY nginx/nginx.conf /etc/nginx
-COPY nginx/conf.d/php.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY conf /etc/php81
 COPY public /usr/share/nginx/html
 

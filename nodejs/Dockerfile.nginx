@@ -10,11 +10,11 @@ RUN apk add \
 WORKDIR /app
 
 COPY nginx/nginx.conf /etc/nginx
-COPY nginx/conf.d/nodejs.conf /etc/nginx/conf.d/default.conf
-COPY nodejs/package*.json .
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY package.json .
 
 RUN npm install
-COPY app/nodejs .
+COPY . .
 
 EXPOSE 80
 
