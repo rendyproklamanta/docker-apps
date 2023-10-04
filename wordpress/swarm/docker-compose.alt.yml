@@ -1,27 +1,16 @@
 version: "3.8"
 services:
   wordpress:
-    image: wordpress:latest
+    image: 127.0.0.1:5000/wordpress
     restart: always
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 5s
-        order: start-first
-      restart_policy:
-        condition: any
-        delay: 10s
-        max_attempts: 10
-        window: 15s
-      labels:
-        - traefik.enable=true
-        - traefik.port=80
-        - traefik.tags=traefik-public
-        - traefik.docker.network=traefik-public
-        - traefik.frontend.rule=Host:your.domain.com
-        - traefik.frontend.entryPoints=http,https
-        - traefik.frontend.redirect.entryPoint=https
+    labels:
+      - traefik.enable=true
+      - traefik.port=80
+      - traefik.tags=traefik-network
+      - traefik.docker.network=traefik-network
+      - traefik.frontend.rule=Host:your.domain.com
+      - traefik.frontend.entryPoints=http,https
+      - traefik.frontend.redirect.entryPoint=https
     secrets:
       - WORDPRESS_DB_HOST
       - WORDPRESS_DB_USER
@@ -35,9 +24,9 @@ services:
       WORDPRESS_TABLE_PREFIX: wp_
       # WORDPRESS_DEBUG: 1
     volumes:
-      - wordpress:/var/www/html
+      - /mnt/wp/data:/var/www/html
     networks:
-      - traefik-public
+      - traefik-network
 
 #printf "mysql" | docker secret create WORDPRESS_DB_HOST -
 #printf "wpusr" | docker secret create WORDPRESS_DB_USER -
@@ -54,14 +43,5 @@ secrets:
     external: true
 
 networks:
-  traefik-public:
+  traefik-network:
     external: true
-
-volumes:
-  wordpress:
-    driver: local
-    driver_opts:
-      o: bind
-      type: none
-      # mkdir -p /data/wordpress
-      device: /data/wordpress

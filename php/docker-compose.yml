@@ -2,30 +2,21 @@ version: "3.4"
 
 services:
   php:
-    image: randyproxz/php
+    image: docker.io/randyproxz/php:latest
     restart: always
     networks:
-      - traefik-public
+      - traefik-network
     environment:
       - TZ=Asia/Jakarta
-    deploy:
-      mode: global
-      # mode: replicated
-      # replicas: 3
-      update_config:
-        parallelism: 0
-        order: start-first
-        failure_action: rollback
-        delay: 40s
-      labels:
-        - traefik.enable=true
-        - traefik.port=80
-        - traefik.frontend.rule=Host:php.domain.com
-        - traefik.tags=traefik-public
-        - traefik.docker.network=traefik-public
-        - traefik.frontend.entryPoints=http,https
-        - traefik.frontend.redirect.entryPoint=https
+    labels:
+      - traefik.enable=true
+      - traefik.port=80
+      - traefik.frontend.rule=Host:php.domain.com
+      - traefik.tags=traefik-network
+      - traefik.docker.network=traefik-network
+      - traefik.frontend.entryPoints=http,https
+      - traefik.frontend.redirect.entryPoint=https
 
 networks:
-  traefik-public:
+  traefik-network:
     external: true

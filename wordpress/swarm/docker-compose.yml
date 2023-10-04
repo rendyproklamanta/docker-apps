@@ -1,12 +1,9 @@
 version: "3.8"
 services:
   wordpress:
-    image: 127.0.0.1:5000/wordpress
+    image: wordpress:latest
     restart: always
     deploy:
-      placement:
-        constraints:
-          - node.hostname == srv1
       replicas: 1
       update_config:
         parallelism: 1
@@ -20,8 +17,8 @@ services:
       labels:
         - traefik.enable=true
         - traefik.port=80
-        - traefik.tags=traefik-public
-        - traefik.docker.network=traefik-public
+        - traefik.tags=traefik-network
+        - traefik.docker.network=traefik-network
         - traefik.frontend.rule=Host:your.domain.com
         - traefik.frontend.entryPoints=http,https
         - traefik.frontend.redirect.entryPoint=https
@@ -38,9 +35,9 @@ services:
       WORDPRESS_TABLE_PREFIX: wp_
       # WORDPRESS_DEBUG: 1
     volumes:
-      - /mnt/wp/data:/var/www/html
+      - /var/www/html/wordpress:/var/www/html
     networks:
-      - traefik-public
+      - traefik-network
 
 #printf "mysql" | docker secret create WORDPRESS_DB_HOST -
 #printf "wpusr" | docker secret create WORDPRESS_DB_USER -
@@ -57,5 +54,5 @@ secrets:
     external: true
 
 networks:
-  traefik-public:
+  traefik-network:
     external: true
