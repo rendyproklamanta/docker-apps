@@ -1,47 +1,77 @@
-FROM alpine:3.17
+FROM php:7.4.0-fpm-alpine
 
-RUN apk update && apk upgrade
-RUN apk add \
-    bash \
-    nginx \
-    php81 \
-    php81-common \
-    php81-dev \
-    php81-gd \
-    php81-xmlreader \
-    php81-bcmath \
-    php81-ctype \
-    php81-curl \
-    php81-exif \
-    php81-iconv \
-    php81-intl \
-    php81-mbstring \
-    php81-mysqli \
-    php81-opcache \
-    php81-openssl \
-    php81-pcntl \
-    php81-phar \
-    php81-session \
-    php81-xml \
-    php81-xsl \
-    php81-zip \
-    php81-zlib \
-    php81-dom \
-    php81-fpm \
-    php81-sodium \
-    # Iconv Fix
-    php81-pecl-apcu
+ENV COMPOSER_CACHE_DIR /tmp
 
-RUN mkdir -p /var/run/php
+COPY --from=composer:2.0 /usr/bin/composer /usr/local/bin/composer
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install mandatory
+RUN apk add --no-cache nginx supervisor fcgi
 
-COPY nginx/nginx.conf /etc/nginx
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-COPY conf /etc/php81
-COPY public /usr/share/nginx/html
+# Install required library for extensions
+RUN apk add --no-cache \
+    libpng \
+    libpng-dev \
+    libjpeg-turbo \
+    libjpeg-turbo-dev \
+    freetype \
+    freetype-dev \
+    libzip \
+    libzip-dev \
+    zlib \
+    zlib-dev \
+    libxslt-dev \
+    libxml2 \
+    libxml2-dev \
+    curl-dev \
+    openssl-dev \
+    libsodium-dev \
+    oniguruma-dev \
+    icu-libs \
+    icu-dev \
+    g++ \
+    gettext-dev \
+    bzip2-dev \
+    libmemcached-dev \
+    dcron \
+    libmcrypt-dev \
+    gcc \
+    g++ \
+    make \
+    autoconf \
+    libc-dev \
+    pkgconfig
 
-EXPOSE 80
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-CMD ["/bin/bash", "-c", "php-fpm81 && chmod 777 /var/run/php/php81-fpm.sock && chmod 755 /usr/share/nginx/html/* && nginx -g 'daemon off;'"]
+# Install PHP extensions
+RUN docker-php-ext-install \
+    mysqli pdo pdo_mysql \
+    intl \
+    zip \
+    mbstring \
+    curl \
+    gd \
+    xml \
+    soap \
+    sockets \
+    sodium \
+    opcache \
+    bcmath
+
+RUN pecl install mcrypt-1.0.4 && docker-php-ext-enable mcrypt
+
+# Copy files to container
+COPY ./source /usr/share/nginx/html
+COPY ./conf/php.ini /usr/local/etc/php/php.ini
+COPY ./conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/default.conf /etc/nginx/conf.d/default.conf 
+
+# # Copy cron file to the cron.d directory
+# COPY ./source/cron /etc/cron.d/cron
+# RUN chmod 0644 /etc/cron.d/cron
+# RUN crontab /etc/cron.d/cron
+# RUN touch /var/log/cron.log
+
+# Start Supervisord to manage programs
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
