@@ -68,7 +68,7 @@ COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf 
 
 # # Copy cron file to the cron.d directory
-# COPY ./source/cron /etc/cron.d/cron
+# COPY ./conf/cron /etc/cron.d/cron
 # RUN chmod 0644 /etc/cron.d/cron
 # RUN crontab /etc/cron.d/cron
 # RUN touch /var/log/cron.log
