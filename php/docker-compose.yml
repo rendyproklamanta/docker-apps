@@ -8,6 +8,7 @@ services:
       - traefik-network
     volumes:
       - /var/log/nginx:/var/log/nginx # mkdir -p /var/log/nginx
+      - /var/log/cron.log:/var/log/cron.log # mkdir -p /var/log/cron.log && chmod 777 /var/log/cron.log
       - /tmp:/tmp
     environment:
       - TZ=Asia/Jakarta
