@@ -60,6 +60,10 @@ RUN docker-php-ext-install \
 
 RUN pecl install mcrypt-1.0.4 && docker-php-ext-enable mcrypt
 
+# Create the cache nginx
+RUN mkdir -p /var/cache/nginx/fastcgi
+RUN chown -R nginx:nginx /var/cache/nginx
+
 # Copy files to container
 COPY ./source /usr/share/nginx/html
 COPY ./conf/php.ini /usr/local/etc/php/php.ini

@@ -6,6 +6,9 @@ services:
     restart: always
     networks:
       - traefik-network
+    volumes:
+      - /var/log/nginx:/var/log/nginx # mkdir -p /var/log/nginx
+      - /tmp:/tmp
     environment:
       - TZ=Asia/Jakarta
     # # Deploy is using docker-swarm
