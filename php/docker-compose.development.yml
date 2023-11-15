@@ -1,0 +1,40 @@
+version: "3.7"
+
+services:
+  php74:
+    image: randyproxz/php7.4-fpm-alpine
+    environment:
+      - CI_ENV=development
+      - TZ=Asia/Jakarta
+    volumes:
+      - ./source:/usr/share/nginx/html
+      - ./conf/development/php.ini:/usr/local/etc/php/php.ini
+      - ./conf/docker.conf:/usr/local/etc/php-fpm.d/docker.conf
+    command: 
+      - sh
+      - -c
+      - |
+        /usr/local/sbin/php-fpm -F &
+        /usr/share/nginx/html/entrypoint.sh
+    networks:
+      - bridge
+
+  app-development:
+    image: nginx:latest
+    environment:
+      - CI_ENV=development
+      - TZ=Asia/Jakarta
+    ports:
+      - 80:80
+    volumes:
+      - ./source:/usr/share/nginx/html
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./conf/development/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php74
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge

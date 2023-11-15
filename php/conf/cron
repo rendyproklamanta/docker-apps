@@ -1,9 +1,0 @@
-#     ,------ MINUTE
-#    / ,----- HOUR
-#   / / ,---- DAY OF MONTH
-#  / / / ,--- MONTH
-# / / / / ,-- DAY OF WEEK
-#/ / / / /
-#* * * * * php /usr/share/nginx/html/index.php function/method >> /var/log/cron.log 2>&1
-#*/1 * * * * echo "Hello world" >> /var/log/cron.log 2>&1
-# END Cron
