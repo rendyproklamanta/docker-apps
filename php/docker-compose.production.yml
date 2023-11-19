@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
 
-  app-production:
+  myapp-production:
     image: randyproxz/php7.4-fpm-alpine:production
     networks:
       - traefik-network
@@ -40,7 +40,7 @@ services:
         - "traefik.http.routers.app-production.tls.certresolver=le"
         - "traefik.http.services.app-production.loadbalancer.server.port=80"
 
-  app-cron:
+  myapp-cron:
     image: randyproxz/php7.4-fpm-alpine:production
     environment:
       - CI_ENV=production
