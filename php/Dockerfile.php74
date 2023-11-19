@@ -1,5 +1,7 @@
 # Stage 1: Build your PHP application with PHP-FPM
-FROM public.ecr.aws/docker/library/php:7.4-fpm-alpine
+FROM php:7.4-fpm-alpine
+
+USER root
 
 ENV COMPOSER_CACHE_DIR /tmp
 
@@ -7,7 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install mandatory
 RUN apk update
-RUN apk add --no-cache fcgi busybox
+RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata
 
 # Install required library for extensions
 RUN apk add --no-cache \
@@ -67,5 +69,4 @@ RUN apk --no-cache add libmcrypt-dev \
     && docker-php-ext-enable mcrypt \
     && docker-php-source delete
 
-# Copy AND RUN command.sh
 CMD ["/usr/local/sbin/php-fpm", "-F"]
