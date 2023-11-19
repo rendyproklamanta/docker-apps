@@ -11,7 +11,7 @@ services:
       - TZ=Asia/Jakarta
     volumes:
       - /var/log/nginx:/var/log/nginx # mkdir -p /var/log/nginx
-      - /var/log/php-fpm.log:/var/log/php-fpm.log
+      - /var/log/php:/var/log/php
       # - /tmp:/tmp
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost/healthcheck"]
@@ -48,12 +48,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-    command: 
-      - sh
-      - -c
-      - |
-        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n &
-        /usr/share/nginx/html/entrypoint.sh
+    entrypoint: /entrypoint.sh
+    volumes:
+      - /var/log/cron:/var/log/cron 
     networks:
       - traefik-network
 

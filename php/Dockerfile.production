@@ -73,6 +73,11 @@ RUN apk --no-cache add libmcrypt-dev \
 RUN mkdir -p /var/cache/nginx/fastcgi
 RUN chown -R nginx:nginx /var/cache/nginx
 
+# Create log dir
+RUN mkdir -p /var/log/php
+RUN mkdir -p /var/log/nginx
+RUN mkdir -p /var/log/cron
+
 # Copy your files to container
 COPY ./source /usr/share/nginx/html
 COPY ./conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
@@ -82,13 +87,13 @@ COPY ./conf/production/php.ini /usr/local/etc/php/php.ini
 COPY ./conf/docker.conf /usr/local/etc/php-fpm.d/docker.conf
 
 # Copy the entrypoint script to the container
-COPY entrypoint/production.sh /entrypoint.sh
+COPY ./conf/production.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Healthcheck
-RUN wget -O /usr/local/bin/php-fpm-healthcheck \
-    https://raw.githubusercontent.com/renatomefi/php-fpm-healthcheck/master/php-fpm-healthcheck \
-    && chmod +x /usr/local/bin/php-fpm-healthcheck
+COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
+RUN set -xe && echo "pm.status_path = /status" >> /usr/local/etc/php-fpm.d/zz-docker.conf
+RUN chmod +x /usr/local/bin/php-fpm-healthcheck
 
 HEALTHCHECK --interval=10s \
     CMD php-fpm-healthcheck || exit 1
