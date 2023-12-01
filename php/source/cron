@@ -1,3 +1,7 @@
+# NOTE : Always place in bottom active cron command and commenting if not use. Place it before active command
+#
+# TIME FORMAT :
+#
 #     ,------ MINUTE
 #    / ,----- HOUR
 #   / / ,---- DAY OF MONTH

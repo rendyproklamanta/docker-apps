@@ -10,14 +10,9 @@ services:
       - CI_ENV=production
       - TZ=Asia/Jakarta
     volumes:
-      - /var/log/nginx:/var/log/nginx # mkdir -p /var/log/nginx
+      - /var/log/nginx:/var/log/nginx
       - /var/log/php:/var/log/php
-      # - /tmp:/tmp
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost/healthcheck"]
-    #   interval: 10s 
-    #   timeout: 10s
-    #   retries: 10
+      - /tmp:/tmp
     deploy:
       # mode: global
       mode: replicated
@@ -38,21 +33,22 @@ services:
         - "traefik.http.routers.app-production.tls=true"
         - "traefik.http.routers.app-production.tls.options=intermediate@file"
         - "traefik.http.routers.app-production.tls.certresolver=le"
+        - "traefik.http.routers.app-production.middlewares=default-middlewares"
         - "traefik.http.services.app-production.loadbalancer.server.port=80"
 
-  myapp-cron:
-    image: randyproxz/php7.4-fpm-alpine:production
-    environment:
-      - CI_ENV=production
-      - TZ=Asia/Jakarta
-    deploy:
-      mode: replicated
-      replicas: 1
-    entrypoint: /entrypoint.sh
-    volumes:
-      - /var/log/cron:/var/log/cron 
-    networks:
-      - traefik-network
+  # myapp-cron:
+  #   image: randyproxz/php7.4-fpm-alpine:production
+  #   environment:
+  #     - CI_ENV=production
+  #     - TZ=Asia/Jakarta
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #   volumes:
+  #     - /var/log/cron:/var/log/cron
+  #   command: sh -c "cat /usr/share/nginx/html/cron >> /etc/crontabs/root && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n"
+  #   networks:
+  #     - traefik-network
 
 networks:
   traefik-network:
