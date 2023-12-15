@@ -61,6 +61,13 @@ RUN docker-php-ext-install \
     opcache \
     bcmath
 
+# Install MongoDB PHP driver
+RUN pecl install mongodb && docker-php-ext-enable mongodb
+
+# Install PostgreSQL extension
+RUN apk add --no-cache postgresql-dev \
+    && docker-php-ext-install pdo_pgsql pgsql
+    
 # Install mcrypt
 ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
 RUN apk --no-cache add libmcrypt-dev \
