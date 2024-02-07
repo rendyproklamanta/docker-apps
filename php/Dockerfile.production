@@ -88,10 +88,8 @@ COPY ./conf/docker.conf /usr/local/etc/php-fpm.d/docker.conf
 
 # Healthcheck
 COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
-RUN set -xe && echo "pm.status_path = /healthcheck" >> /usr/local/etc/php-fpm.d/zz-docker.conf
 RUN chmod +x /usr/local/bin/php-fpm-healthcheck
-
-HEALTHCHECK --interval=10s \
+HEALTHCHECK --start-period=10s --interval=10s \
     CMD php-fpm-healthcheck || exit 1
 
 # Start Supervisord to manage programs
