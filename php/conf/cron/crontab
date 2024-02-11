@@ -1,0 +1,10 @@
+# TIME FORMAT :
+#
+#     ,------ MINUTE
+#    / ,----- HOUR
+#   / / ,---- DAY OF MONTH
+#  / / / ,--- MONTH
+# / / / / ,-- DAY OF WEEK
+#/ / / / /
+#* * * * * echo "$(date) - Test Cron" >> /var/log/cron/cron.log 2>&1
+#* * * * * echo "$(date) - test - $(/usr/local/bin/php /usr/share/nginx/html/index.php cron/test)" >> /var/log/cron/cron.log 2>&1

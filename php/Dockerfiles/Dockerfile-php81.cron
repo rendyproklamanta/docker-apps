@@ -1,0 +1,18 @@
+# Stage 1: Build your PHP application with PHP-FPM
+FROM randyproxz/php8.1-fpm-alpine
+
+# Install mandatory
+RUN apk update
+RUN apk add --no-cache supervisor tzdata
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
+# Create log file
+RUN mkdir -p /var/log/cron
+
+# Copy your files to container
+COPY ./source /usr/share/nginx/html
+COPY ./conf/cron/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Configure cron jobs
+ADD ./conf/cron/crontab /crontab
+RUN /usr/bin/crontab /crontab
