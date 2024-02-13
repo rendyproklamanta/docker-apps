@@ -32,7 +32,7 @@ services:
       - bridge
       
   myapp-cron:
-    container_name: geniomax-cron
+    container_name: myapp-cron
     image: randyproxz/php7.4-cron
     env_file:
       - .env.development

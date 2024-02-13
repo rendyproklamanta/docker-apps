@@ -1,0 +1,24 @@
+# Stage 1: Build your PHP application with PHP-FPM
+FROM randyproxz/php7.4-fpm-alpine
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Install mandatory
+RUN apk update
+RUN apk add --no-cache supervisor tzdata
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+RUN pecl install redis && docker-php-ext-enable redis
+
+COPY ./source .
+
+# Laravel
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install
+RUN chmod -R 777 /usr/share/nginx/html/storage
+RUN chmod -R 777 /usr/share/nginx/html/bootstrap/cache
+
+# Start Supervisord to manage programs
+COPY ./conf/development/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
