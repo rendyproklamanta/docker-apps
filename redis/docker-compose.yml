@@ -2,8 +2,9 @@ version: "3.8"
 services:
   redis:
     image: redis
-    restart: always
-    command: redis-server --requirepass <YOUR_PASSWORD>
+    env_file:
+      - .env
+    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASSWORD"
     volumes:
       - redis:/var/lib/redis
       - redis-config:/usr/local/etc/redis/redis.conf

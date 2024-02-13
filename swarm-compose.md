@@ -10,12 +10,9 @@
         order: start-first
         failure_action: rollback
         delay: 40s
-      labels:
-        - traefik.enable=true
-        - traefik.port=3000
-        - traefik.tags=traefik-network
-        - traefik.docker.network=traefik-network
-        - traefik.frontend.rule=Host:domain.com
-        - traefik.frontend.entryPoints=http,https
-        - traefik.frontend.redirect.entryPoint=https
+```
+
+### Deploy command using swarm
+```
+docker stack deploy --compose-file docker-compose.yml STACK_NAME
 ```
