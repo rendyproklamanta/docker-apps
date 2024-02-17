@@ -9,7 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install mandatory
 RUN apk update
-RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata
+RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata git
 
 # Install required library for extensions
 RUN apk add --no-cache \
@@ -65,7 +65,7 @@ RUN docker-php-ext-install \
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
 # Install PostgreSQL extension
-RUN apk add --no-cache postgresql-dev \
+RUN apk add --no-cache postgresql-dev libpq-dev \
     && docker-php-ext-install pdo_pgsql pgsql
     
 # Install mcrypt
