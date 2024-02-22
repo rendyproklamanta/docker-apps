@@ -10,7 +10,7 @@ const app = express();
 app.use(morgan(app.get('env') === 'production' ? 'combined' : 'dev'));
 app.use(helmet());
 app.use(compression());
-        
+
 app.get('/', (req, res) => {
   res.json({
     hostname: os.hostname(),

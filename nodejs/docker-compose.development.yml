@@ -1,0 +1,22 @@
+version: "3.4"
+
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    volumes:
+      - ./source:/app
+      - /app/node_modules
+    environment:
+      - TZ=Asia/Jakarta
+    ports:
+      - 3000:3000
+    command: npm run dev
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge

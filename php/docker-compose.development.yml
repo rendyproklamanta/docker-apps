@@ -14,8 +14,8 @@ services:
     networks:
       - bridge
 
-  myapp-development:
-    container_name: myapp-development
+  myapp-nginx:
+    container_name: myapp-nginx
     depends_on:
       - myapp-php
     image: nginx:latest
