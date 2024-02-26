@@ -1,33 +1,10 @@
-# Stage 1: Build your PHP application with PHP-FPM
-FROM randyproxz/php7.4-fpm-alpine
-
-# Set working directory
-WORKDIR /usr/share/nginx/html
-
-# Install mandatory
-RUN apk update
-RUN apk add --no-cache nginx supervisor tzdata
-RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+...
 
 # install phpredis extension
 RUN git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis
 RUN docker-php-ext-install redis
 
-# Create the cache nginx
-RUN mkdir -p /var/cache/nginx/fastcgi
-RUN chown -R nginx:nginx /var/cache/nginx
-
-# Create log file
-RUN mkdir -p /var/log/php
-RUN mkdir -p /var/log/nginx
-
-# Copy your files to container
-COPY ./source .
-COPY ./conf/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY ./conf/production/default.conf /etc/nginx/conf.d/default.conf 
-COPY ./conf/production/php.ini /usr/local/etc/php/php.ini
-COPY ./conf/docker.conf /usr/local/etc/php-fpm.d/docker.conf
+...
 
 # Laravel
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -37,12 +14,4 @@ RUN chown -R $USER:www-data /usr/share/nginx/html/bootstrap/cache
 RUN chmod -R 777 /usr/share/nginx/html/storage
 RUN chmod -R 777 /usr/share/nginx/html/bootstrap/cache
 
-# Healthcheck
-COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
-RUN chmod +x /usr/local/bin/php-fpm-healthcheck
-
-HEALTHCHECK --interval=10s \
-    CMD php-fpm-healthcheck || exit 1
-
-# Start Supervisord to manage programs
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
+...

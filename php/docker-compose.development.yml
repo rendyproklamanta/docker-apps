@@ -33,13 +33,15 @@ services:
       
   myapp-cron:
     container_name: myapp-cron
-    image: randyproxz/php7.4-cron
+    image: randyproxz/php7.4-fpm-alpine
     env_file:
       - .env.development
     volumes:
       - ./logs/cron:/var/log/cron
       - ./source:/usr/share/nginx/html
-    command: sh -c "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n"
+      - ./conf/cron/crontab:/crontab
+      - ./conf/cron/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf
+    command: sh -c "/usr/bin/crontab /crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n"
     networks:
       - bridge
 

@@ -56,15 +56,15 @@ services:
         - "traefik.http.routers.app-production.middlewares=default-middlewares@file"
 
   myapp-cron:
-    image: randyproxz/php7.4-cron
+    image: randyproxz/php7.4-fpm-alpine:production
+    volumes:
+      - /var/log/cron:/var/log/cron
+    env_file:
+      - .env.production
     deploy:
       mode: replicated
       replicas: 1
-    env_file:
-      - .env.production
-    volumes:
-      - /var/log/cron:/var/log/cron
-    command: sh -c "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n"
+    command: sh -c "/usr/bin/crontab /crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/cron.conf -n"
     networks:
       - traefik-network
 
