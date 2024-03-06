@@ -1,20 +1,22 @@
 version: "3.4"
 
 services:
-  nodejs:
+  nextjs-dev:
+    container_name: nextjs-dev
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.development
     restart: always
     volumes:
       - ./source:/app
       - /app/node_modules
     environment:
-      - TZ=Asia/Jakarta
       - NODE_ENV=development
+      - TZ=Asia/Jakarta
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     ports:
       - 3000:3000
-    command: npm run dev
     networks:
       - bridge
 

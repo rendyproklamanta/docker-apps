@@ -1,14 +1,17 @@
-version: "3.4"
+version: "3.7"
 
 services:
-  nodejs:
-    image: randyproxz/nodejs
-    restart: always
+  nextjs-production:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.production
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Jakarta
+    volumes:
+      - /var/log/nginx:/var/log/nginx
     networks:
       - traefik-network
-    environment:
-      - TZ=Asia/Jakarta
-      - NODE_ENV=production
     deploy:
       mode: replicated
       replicas: 2
