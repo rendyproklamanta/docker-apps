@@ -9,23 +9,28 @@ services:
       - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
-      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
-      - db-network
+      - bridge
+      - postgres
 
   phppgadmin:
     image: dpage/pgadmin4
     env_file:
       - .env
     volumes:
-      - ./data_pgadmin:/var/lib/pgadmin/data
+       - ./servers.json:/pgadmin4/servers.json # preconfigured servers/connections
     ports:
       - 8080:80
     depends_on:
       - postgres
     networks:
-      - db-network
+      - bridge
+      - postgres
 
 networks:
-  db-network:
+  postgres:
     external: true
+  bridge:
+    driver: bridge
