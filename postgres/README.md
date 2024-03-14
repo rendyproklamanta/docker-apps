@@ -1,6 +1,6 @@
 - Create Network
 ```
-docker network create --driver overlay db-network
+docker network create --driver overlay db-postgres
 ```
 
 - Create directory
