@@ -11,6 +11,7 @@ services:
       - ./source:/usr/share/nginx/html
       - ./conf/development/php.ini:/usr/local/etc/php/php.ini
       - ./conf/docker.conf:/usr/local/etc/php-fpm.d/docker.conf
+      - ./conf/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
     networks:
       - bridge
 

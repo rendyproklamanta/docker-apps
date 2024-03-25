@@ -16,6 +16,8 @@ services:
       # mode: global
       mode: replicated
       replicas: 3
+      update_config:
+        delay: 1s
       # update_config:
       #   parallelism: 3
       #   order: start-first
@@ -64,6 +66,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      update_config:
+        delay: 1s
     command: sh -c "/usr/bin/crontab /crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/cron.conf -n"
     networks:
       - traefik-network
