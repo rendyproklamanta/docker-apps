@@ -33,7 +33,7 @@ ADD ./conf/cron/crontab /crontab
 # Healthcheck
 COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
 RUN chmod +x /usr/local/bin/php-fpm-healthcheck
-HEALTHCHECK --start-period=10s --interval=10s \
+HEALTHCHECK --start-period=10s --interval=30s \
     CMD php-fpm-healthcheck || exit 1
 
 # Start Supervisord to manage programs

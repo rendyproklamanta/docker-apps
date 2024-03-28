@@ -15,9 +15,9 @@ services:
     deploy:
       # mode: global
       mode: replicated
-      replicas: 3
+      replicas: 2
       update_config:
-        delay: 1s
+        delay: 10s
       # update_config:
       #   parallelism: 3
       #   order: start-first
