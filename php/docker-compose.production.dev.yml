@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+
+  app-production:
+    image: app/production-dev
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    env_file:
+      - .env.development
+    ports:
+      - 80:80
+    volumes:
+      - ./logs/nginx:/var/log/nginx
+      - ./logs/php:/var/log/php
+      - /tmp:/tmp
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
