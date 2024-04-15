@@ -5,7 +5,7 @@
          "type": "shell",
          "problemMatcher": [],
          "label": "git pull",
-         "command": "git pull; echo 'git pulled!'",
+         "command": "git pull",
          "runOptions": {
             "runOn": "folderOpen"
          }
