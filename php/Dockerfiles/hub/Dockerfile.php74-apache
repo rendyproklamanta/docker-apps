@@ -1,0 +1,53 @@
+FROM php:7.4-apache
+
+# Install system dependencies and PHP extensions
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libpng-dev \
+        libjpeg-dev \
+        libfreetype6-dev \
+        libonig-dev \
+        libxml2-dev \
+        exif \
+        cron \
+        g++ \
+        gettext \
+        libicu-dev \
+        openssl \
+        libc-client-dev \
+        libkrb5-dev \
+        libgd-dev \
+        libmcrypt-dev \
+        bzip2 \
+        libbz2-dev \
+        libtidy-dev \
+        libcurl4-openssl-dev \
+        libz-dev \
+        libmemcached-dev \
+        libxslt-dev
+
+# Install mysqli extension
+RUN docker-php-ext-install mysqli
+RUN docker-php-ext-enable mysqli
+
+# Install GD
+RUN docker-php-ext-configure gd --with-freetype=/usr --with-jpeg=/usr
+RUN docker-php-ext-install gd
+
+# Install php-zip extension and dependencies
+RUN apt-get install -y libzip-dev zip unzip && \
+    docker-php-ext-configure zip && \
+    docker-php-ext-install zip
+
+# Clean up to reduce the image size
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+RUN a2enmod headers
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache server
+CMD ["apache2-foreground"]

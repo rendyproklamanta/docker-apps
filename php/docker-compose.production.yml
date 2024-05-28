@@ -1,7 +1,6 @@
 version: "3.7"
 
 services:
-
   myapp-production:
     image: randyproxz/php7.4-fpm-alpine:production
     networks:
@@ -12,6 +11,11 @@ services:
       - /var/log/nginx:/var/log/nginx
       - /var/log/php:/var/log/php
       - /tmp:/tmp
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
     deploy:
       # mode: global
       mode: replicated
@@ -32,7 +36,7 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.lbswarm=true"
         - "traefik.docker.network=traefik-network"
-        
+
         # http
         - "traefik.http.routers.app-production-http.rule=Host(`app.com`,`www.app.com`)"
         - "traefik.http.routers.app-production-http.entrypoints=web"

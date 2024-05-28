@@ -1,0 +1,16 @@
+FROM randyproxz/php:7.4-apache
+
+# Set the working directory
+WORKDIR /var/www/html
+
+# Copy application source code to /var/www/html
+COPY ./source .
+
+# CHMOD
+RUN chmod -R 777 /var/www/html/app/xxxx
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache server
+CMD ["apache2-foreground"]
