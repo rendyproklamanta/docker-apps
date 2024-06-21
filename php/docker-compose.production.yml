@@ -16,6 +16,7 @@ services:
       options:
         max-size: "10m"
         max-file: "1"
+    entrypoint: entrypoint.sh
     deploy:
       # mode: global
       mode: replicated
@@ -36,6 +37,10 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.lbswarm=true"
         - "traefik.docker.network=traefik-network"
+
+        # Access Web by IP
+        # - "traefik.http.routers.app-production-ip.rule=Host(`192.168.1.1`)"
+        # - "traefik.http.routers.app-production-ip.entrypoints=web"
 
         # http
         - "traefik.http.routers.app-production-http.rule=Host(`app.com`,`www.app.com`)"
@@ -73,7 +78,7 @@ services:
       replicas: 1
       update_config:
         delay: 1s
-    command: sh -c "/usr/bin/crontab /crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/cron.conf -n"
+    entrypoint: entrypoint-cron.sh
     networks:
       - traefik-network
 
