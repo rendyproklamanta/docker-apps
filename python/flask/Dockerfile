@@ -24,13 +24,9 @@ COPY ./source /app
 # Set ENV to the current working directory
 ENV PYTHONPATH=/app
 ENV FLASK_APP=app.py
-ENV FLASK_ENV=production
 
 # Expose the port that the Flask app runs on
 EXPOSE 5000
-
-# Run the Flask application using gunicorn
-CMD ["gunicorn", "--workers=3", "-b", "0.0.0.0:5000", "app:app"]
 
 # Health check to test if app is running
 HEALTHCHECK --interval=5m --start-period=3m --start-interval=30s \

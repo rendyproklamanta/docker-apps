@@ -5,9 +5,10 @@ services:
       container_name: myapp
       build:
          context: .
-         dockerfile: ./Dockerfile.development
+         dockerfile: ./Dockerfile
       env_file:
          - .env.development
+      command: ["flask", "run", "--host=0.0.0.0", "--debug"]
       ports:
          - 5000:5000
       volumes:
