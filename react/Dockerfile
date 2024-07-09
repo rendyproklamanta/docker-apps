@@ -17,3 +17,7 @@ RUN yarn build
 EXPOSE 3000
 
 CMD serve -s build
+
+# Health check to test if app is running
+HEALTHCHECK --interval=5m --start-period=3m --start-interval=30s \
+   CMD curl -f http://localhost:3000 || exit 1

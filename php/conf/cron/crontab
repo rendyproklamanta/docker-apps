@@ -1,10 +1,13 @@
-# TIME FORMAT :
+# How to use :
+# /usr/share/nginx/html/index.php cron/test : change "cron/test" to "cron/funcName/<params_if_any>", ex : "cron/wd/1"
+# `date +\%d-\%m-\%Y_\%H-\%M`-test.log : change "-test.log" to your cron name, ex : "-custom.log"
 #
+# TIME FORMAT :
 #     ,------ MINUTE
 #    / ,----- HOUR
 #   / / ,---- DAY OF MONTH
 #  / / / ,--- MONTH
 # / / / / ,-- DAY OF WEEK
 #/ / / / /
-#* * * * * echo "$(date) - Test Cron" >> /var/log/cron/cron.log 2>&1
-#* * * * * echo "$(date) - test - $(/usr/local/bin/php /usr/share/nginx/html/index.php cron/test)" >> /var/log/cron/cron.log 2>&1
+#* * * * * echo "$(date) - Test" >> /var/log/cron/test.log 2>&1
+#* * * * * /usr/local/bin/php /usr/share/nginx/html/index.php cron/test >> /var/log/cron/`date +\%d_\%m_\%Y_\%H_\%M`-test.log 2>&1

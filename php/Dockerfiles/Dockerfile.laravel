@@ -1,10 +1,10 @@
-...
-
 # install phpredis extension
 RUN git clone https://github.com/phpredis/phpredis.git /usr/src/php/ext/redis
 RUN docker-php-ext-install redis
 
-...
+---
+# Copy all files to container
+---
 
 # Laravel
 ENV COMPOSER_ALLOW_SUPERUSER=1
@@ -14,4 +14,6 @@ RUN chown -R $USER:www-data /usr/share/nginx/html/bootstrap/cache
 RUN chmod -R 777 /usr/share/nginx/html/storage
 RUN chmod -R 777 /usr/share/nginx/html/bootstrap/cache
 
-...
+---
+# healthcheck
+---

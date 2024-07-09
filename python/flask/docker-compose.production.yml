@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+   myapp-production:
+      image: randyproxz/python-flask:production
+      logging:
+         driver: "json-file"
+         options:
+            max-size: "10m"
+            max-file: "1"
+      env_file:
+         - .env.production
+      deploy:
+         mode: replicated
+         replicas: 1
+         update_config:
+            order: start-first
+            delay: 1s
+         labels:
+            - "traefik.enable=true"
+            - "traefik.docker.lbswarm=true"
+            - "traefik.docker.network=traefik-network"
+
+            # http
+            - "traefik.http.routers.myapp-http.rule=Host(`myapp.com`)"
+            - "traefik.http.routers.myapp-http.entrypoints=web"
+
+            # https
+            - "traefik.http.routers.myapp.rule=Host(myapp.com`)"
+            - "traefik.http.routers.myapp.entrypoints=websecure"
+            - "traefik.http.routers.myapp.tls=true"
+            - "traefik.http.routers.myapp.tls.options=default"
+            - "traefik.http.routers.myapp.tls.certresolver=le"
+
+            # Service
+            - "traefik.http.services.myapp.loadbalancer.server.port=5000"
+            - "traefik.http.services.myapp.loadbalancer.sticky.cookie=true"
+            - "traefik.http.services.myapp.loadbalancer.sticky.cookie.httpOnly=true"
+            - "traefik.http.services.myapp.loadbalancer.sticky.cookie.name=myapp"
+            - "traefik.http.services.myapp.loadbalancer.sticky.cookie.secure=true"
+
+            # Middleware for http
+            - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+            - "traefik.http.routers.myapp-http.middlewares=redirect-to-https"
+
+            # Middleware for https
+            - "traefik.http.routers.myapp.middlewares=default-middlewares@file"
+      networks:
+         - mysql-network
+         - traefik-network
+
+networks:
+   traefik-network:
+      external: true
+   mysql-network:
+      external: true

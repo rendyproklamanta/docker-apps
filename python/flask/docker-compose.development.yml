@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+   myapp:
+      container_name: myapp
+      build:
+         context: .
+         dockerfile: ./Dockerfile.development
+      env_file:
+         - .env.development
+      ports:
+         - 5000:5000
+      volumes:
+         - ./source:/app
+      networks:
+         - bridge
+
+networks:
+   bridge:
+      driver: bridge

@@ -17,9 +17,10 @@ RUN npm install
 
 COPY ./source .
 
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 --start-period=20s \
-  CMD curl -f http://localhost:3000/healthcheck || exit 1
-
 EXPOSE 3000
 
 CMD [ "npm", "start" ]
+
+# Health check to test if app is running
+HEALTHCHECK --interval=5m --start-period=3m --start-interval=30s \
+   CMD curl -f http://localhost:3000/healthcheck || exit 1
