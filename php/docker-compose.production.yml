@@ -24,15 +24,13 @@ services:
       update_config:
         order: start-first
         delay: 1s
-      # update_config:
-      #   parallelism: 3
-      #   order: start-first
-      #   failure_action: rollback
-      #   delay: 1s
-      # restart_policy:
-      #   condition: any
-      #   delay: 20s
-      #   max_attempts: 3
+      #  parallelism: 3
+      #  order: start-first
+      #  failure_action: rollback
+      restart_policy:
+        condition: any
+        delay: 10s
+        max_attempts: 3
       labels:
         - "traefik.enable=true"
         - "traefik.docker.lbswarm=true"
