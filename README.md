@@ -30,8 +30,8 @@ deploy:
     delay: 1s
   restart_policy:
     condition: any
-    delay: 10s
-    max_attempts: 3
+    delay: 5s
+    max_attempts: 2
 ```
 
 - Deploy swarm stack
