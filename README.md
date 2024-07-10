@@ -19,21 +19,22 @@ docker push randyproxz/php7.4-fpm-alpine
 
 ## Docker Swarm Commands
 
-- Deploy spec
+- docker-compose.yml deploy spec mandatory
 
 ```
-    deploy:
-      mode: global
-      # mode: replicated
-      # replicas: 3
-      update_config:
-        parallelism: 0
-        order: start-first
-        failure_action: rollback
-        delay: 40s
+deploy:
+  mode: replicated
+  replicas: 2
+  update_config:
+    order: start-first
+    delay: 1s
+  restart_policy:
+    condition: any
+    delay: 10s
+    max_attempts: 3
 ```
 
-- Deploy stack
+- Deploy swarm stack
 ```
 docker stack deploy --compose-file docker-compose.yml STACK_NAME
 ```
