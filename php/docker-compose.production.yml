@@ -25,7 +25,6 @@ services:
         order: start-first
         delay: 1s
       #  parallelism: 3
-      #  order: start-first
       #  failure_action: rollback
       restart_policy:
         condition: any
