@@ -1,7 +1,8 @@
-## Docker Commands
+# Docker Commands
 
 - Docker compose
-```
+
+```shell
 Up :
 docker compose -f docker-compose.development.yml up -d --force-recreate
 
@@ -11,7 +12,7 @@ docker compose down
 
 - Docker build and push to hub
 
-```
+```shell
 docker build -t randyproxz/php7.4-fpm-alpine -f Dockerfile.php74 .
 
 docker push randyproxz/php7.4-fpm-alpine
@@ -21,21 +22,29 @@ docker push randyproxz/php7.4-fpm-alpine
 
 - docker-compose.yml deploy spec mandatory
 
-```
+```shell
 deploy:
-  mode: replicated
-  replicas: 2
-  update_config:
-    order: start-first
-    delay: 1s
-  restart_policy:
-    condition: any
-    delay: 5s
-    max_attempts: 2
+   mode: replicated
+   replicas: 2
+   update_config:
+      order: start-first
+      delay: 1s
+   resources:
+      limits:
+         cpus: "0.5"
+         memory: 500M
+      reservations:
+         cpus: "0.1"
+         memory: 100M
+   restart_policy:
+      condition: on-failure
+      delay: 5s
+      window: 120s
+      max_attempts: 2
 ```
 
 - Deploy swarm stack
-```
+
+```shell
 docker stack deploy --compose-file docker-compose.yml STACK_NAME
 ```
-
