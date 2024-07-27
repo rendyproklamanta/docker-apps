@@ -10,6 +10,7 @@ services:
     volumes:
       - /var/log/nginx:/var/log/nginx
       - /var/log/php:/var/log/php
+      #- /var/log/php:/usr/share/nginx/html/application/logs
       - /tmp:/tmp
     logging:
       driver: "json-file"
@@ -24,12 +25,18 @@ services:
       update_config:
         order: start-first
         delay: 1s
-      #  parallelism: 3
-      #  failure_action: rollback
+      resources:
+        reservations:
+          cpus: "0.1"
+          memory: 100M
+        limits:
+          cpus: "0.5"
+          memory: 500M
       restart_policy:
-        condition: any
-        delay: 10s
-        max_attempts: 3
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
       labels:
         - "traefik.enable=true"
         - "traefik.docker.lbswarm=true"

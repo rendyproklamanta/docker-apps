@@ -1,13 +1,14 @@
 version: "3.4"
 
 services:
-  nodejs:
-    image: randyproxz/nodejs
-    networks:
-      - traefik-network
+  app-production:
+    image: wordpress:latest
+    env_file:
+      - .env
     environment:
       - TZ=Asia/Jakarta
-      - NODE_ENV=production
+    volumes:
+      - ./data:/var/www/html
     deploy:
       mode: replicated
       replicas: 2
@@ -43,7 +44,7 @@ services:
         - "traefik.http.routers.app-production.tls.certresolver=le"
 
         # Service
-        - "traefik.http.services.app-production.loadbalancer.server.port=3000"
+        - "traefik.http.services.app-production.loadbalancer.server.port=80"
         - "traefik.http.services.app-production.loadbalancer.sticky.cookie=true"
         - "traefik.http.services.app-production.loadbalancer.sticky.cookie.httpOnly=true"
         - "traefik.http.services.app-production.loadbalancer.sticky.cookie.name=app"
@@ -55,6 +56,8 @@ services:
 
         # Middleware for https
         - "traefik.http.routers.app-production.middlewares=default-middlewares@file"
+    networks:
+      - traefik-network
 
 networks:
   traefik-network:

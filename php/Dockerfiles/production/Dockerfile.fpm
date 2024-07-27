@@ -34,6 +34,10 @@ ADD ./conf/cron/crontab /crontab
 COPY ./conf/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+# Give permission to logs dir (optional)
+#RUN chmod -R 777 /usr/share/nginx/html/application/logs
+#RUN chmod -R 777 /usr/share/nginx/html/storage/logs
+
 # Healthcheck
 COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
 RUN chmod +x /usr/local/bin/php-fpm-healthcheck

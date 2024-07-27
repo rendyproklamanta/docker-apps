@@ -2,7 +2,6 @@ version: "3.8"
 services:
   wordpress:
     image: 127.0.0.1:5000/wordpress
-    restart: always
     labels:
       - traefik.enable=true
       - traefik.port=80
