@@ -10,7 +10,7 @@ services:
             max-file: "1"
       env_file:
          - .env.production
-      command: /bin/sh -c '/usr/local/bin/gunicorn -w $(python -c "import multiprocessing; print(2 * multiprocessing.cpu_count() + 1)") -b 0.0.0.0:5000 app:app
+      entrypoint: entrypoint.sh
       deploy:
          mode: replicated
          replicas: 2

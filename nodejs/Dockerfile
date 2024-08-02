@@ -2,7 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk --update --no-cache add curl tzdata
+# Install build dependencies
+RUN apk --update --no-cache add \
+   supervisor \
+   tzdata \
+   nginx \
+   curl \
+   ntp \
+   npm \
 
 # Set Timezone
 RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
@@ -10,16 +17,17 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 # Set Environment
 ENV PATH /app/node_modules/.bin:$PATH
 
-# Copy your files to container
-COPY ./source/package.json .
+# Copy the requirements file into the container
+COPY ./source /app
+COPY ./conf/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./conf/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/production/default.conf /etc/nginx/conf.d/default.conf 
+
+# Install depedencies
 RUN npm install -g nodemon
 RUN npm install
 
-COPY ./source .
-
-EXPOSE 3000
-
-CMD [ "npm", "start" ]
+EXPOSE 80
 
 # Health check to test if app is running
 HEALTHCHECK --interval=5m --start-period=3m --start-interval=30s \

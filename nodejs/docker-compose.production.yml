@@ -8,6 +8,7 @@ services:
     environment:
       - TZ=Asia/Jakarta
       - NODE_ENV=production
+    command: sh -c "/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n"
     deploy:
       mode: replicated
       replicas: 2

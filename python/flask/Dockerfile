@@ -1,12 +1,20 @@
 # Use the official Python image as base image
-FROM python:3-alpine
+FROM python:3-slim
 
-# Install necessary system packages and build dependencies
-RUN apk update && apk add --no-cache \
-   curl \
-   build-base \
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+   build-essential \
+   libssl-dev \
    libffi-dev \
-   openssl-dev
+   supervisor \
+   tzdata \
+   nginx \
+   curl \
+   ntp \
+   && apt-get clean
+
+# Set timezone
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
 
 # Set the working directory in the container
 WORKDIR /app
@@ -20,14 +28,21 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy the requirements file into the container
 COPY ./source /app
+COPY ./conf/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/production/default.conf /etc/nginx/conf.d/default.conf 
 
 # Set ENV to the current working directory
 ENV PYTHONPATH=/app
 ENV FLASK_APP=app.py
 
-# Expose the port that the Flask app runs on
-EXPOSE 5000
+# Make the entrypoint script executable
+COPY ./conf/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Health check to test if app is running
+# Expose the port that the Flask app runs on
+EXPOSE 80
+
+# Health check to test if the Flask app is running
 HEALTHCHECK --interval=5m --start-period=3m --start-interval=30s \
-   CMD curl -f http://localhost:5000/ || exit 1
+   CMD curl -f http://localhost:5000/healthz || exit 1
