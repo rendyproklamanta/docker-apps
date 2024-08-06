@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+   bitici-production:
+      container_name: bitici-production
+      entrypoint: entrypoint.sh
+      build:
+         context: .
+         dockerfile: ./Dockerfile.production
+      env_file:
+         - .env.production
+      ports:
+         - 80:80
+      volumes:
+         - ./logs/nginx:/var/log/nginx
+         - ./logs/php:/var/log/php
+         - ./logs/php:/usr/share/nginx/html/storage/logs
+         - /tmp:/tmp
+      networks:
+         - bridge
+
+networks:
+   bridge:
+      driver: bridge

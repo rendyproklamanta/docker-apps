@@ -1,0 +1,62 @@
+# Stage 1: Build the Node.js application
+FROM node:20-alpine AS node-build
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Copy the source code
+COPY ./source .
+
+# Install app dependencies without using the cache
+RUN yarn install --pure-lockfile
+
+# Build the application
+RUN yarn build
+
+# Stage 2: Build your PHP application with PHP-FPM
+FROM randyproxz/php8.1-fpm-alpine
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Install mandatory
+RUN apk update
+RUN apk add --no-cache nginx supervisor tzdata
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
+# Create the cache nginx
+RUN mkdir -p /var/cache/nginx/fastcgi
+RUN chown -R nginx:nginx /var/cache/nginx
+
+# Create log file
+RUN mkdir -p /var/log/php
+RUN mkdir -p /var/log/nginx
+
+# Copy built Node.js application from the first stage
+COPY --from=node-build /usr/share/nginx/html /usr/share/nginx/html
+
+# Copy your files to container
+COPY ./conf/production/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./conf/nginx.conf /etc/nginx/nginx.conf
+COPY ./conf/production/default.conf /etc/nginx/conf.d/default.conf 
+COPY ./conf/production/php.ini /usr/local/etc/php/php.ini
+COPY ./conf/docker.conf /usr/local/etc/php-fpm.d/docker.conf
+
+# Laravel
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install
+RUN chown -R $USER:www-data /usr/share/nginx/html/storage
+RUN chown -R $USER:www-data /usr/share/nginx/html/bootstrap/cache
+RUN chmod -R 777 /usr/share/nginx/html/storage
+RUN chmod -R 777 /usr/share/nginx/html/bootstrap/cache
+RUN php artisan optimize:clear
+
+# Healthcheck
+COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
+RUN chmod +x /usr/local/bin/php-fpm-healthcheck
+HEALTHCHECK --interval=5m --start-period=5m --start-interval=30s \
+   CMD php-fpm-healthcheck || exit 1
+
+# Make the entrypoint script executable
+COPY ./conf/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh

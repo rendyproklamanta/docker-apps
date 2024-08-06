@@ -1,0 +1,21 @@
+# Stage 1: Build your PHP application with PHP-FPM
+FROM randyproxz/php8.1-fpm-alpine
+
+# Set working directory
+WORKDIR /usr/share/nginx/html
+
+# Install mandatory
+RUN apk update
+RUN apk add --no-cache supervisor tzdata git
+RUN ln -sf /usr/share/zoneinfo/Asia/Jakarta /etc/localtime
+
+COPY ./source .
+
+# Laravel
+ENV COMPOSER_ALLOW_SUPERUSER=1
+RUN composer install
+RUN chown -R $USER:www-data /usr/share/nginx/html/storage
+RUN chown -R $USER:www-data /usr/share/nginx/html/bootstrap/cache
+RUN chmod -R 777 /usr/share/nginx/html/storage
+RUN chmod -R 777 /usr/share/nginx/html/bootstrap/cache
+RUN php artisan optimize:clear

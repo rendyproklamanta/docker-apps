@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+   bitici-production:
+      image: repo.cic-webpro.com:5050/project/bitici/v3/web:production
+      env_file:
+         - .env.production
+      entrypoint: entrypoint.sh
+      volumes:
+         - /var/log/nginx:/var/log/nginx
+         - /var/log/php:/var/log/php
+         - /var/log/php:/usr/share/nginx/html/storage/logs
+         - /tmp:/tmp
+      logging:
+         driver: "json-file"
+         options:
+            max-size: "5m"
+            max-file: "1"
+      deploy:
+         mode: replicated
+         replicas: 1
+         update_config:
+            order: start-first
+            delay: 1s
+         resources:
+            limits:
+               cpus: "0.5"
+               memory: 500M
+            reservations:
+               cpus: "0.1"
+               memory: 100M
+         restart_policy:
+            condition: on-failure
+            delay: 5s
+            window: 120s
+            max_attempts: 2
+         labels:
+            - "traefik.enable=true"
+            - "traefik.docker.lbswarm=true"
+            - "traefik.docker.network=traefik-network"
+
+            # http
+            - "traefik.http.routers.bitici-production-http.rule=Host(`biticiapp.com`,`www.biticiapp.com`)"
+            - "traefik.http.routers.bitici-production-http.entrypoints=web"
+
+            # https
+            - "traefik.http.routers.bitici-production.rule=Host(`biticiapp.com`,`www.biticiapp.com`)"
+            - "traefik.http.routers.bitici-production.entrypoints=websecure"
+            - "traefik.http.routers.bitici-production.tls=true"
+            - "traefik.http.routers.bitici-production.tls.options=default"
+            - "traefik.http.routers.bitici-production.tls.certresolver=le"
+
+            # Service
+            - "traefik.http.services.bitici-production.loadbalancer.server.port=80"
+            - "traefik.http.services.bitici-production.loadbalancer.sticky.cookie=true"
+            - "traefik.http.services.bitici-production.loadbalancer.sticky.cookie.httpOnly=true"
+            - "traefik.http.services.bitici-production.loadbalancer.sticky.cookie.name=biticiapp"
+            - "traefik.http.services.bitici-production.loadbalancer.sticky.cookie.secure=true"
+
+            # Middleware for http
+            - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+            - "traefik.http.routers.bitici-production-http.middlewares=redirect-to-https"
+
+            # Middleware for https
+            - "traefik.http.routers.bitici-production.middlewares=default-middlewares@file"
+      networks:
+         - mysql-network
+         - traefik-network
+
+networks:
+   traefik-network:
+      external: true
+   mysql-network:
+      external: true
