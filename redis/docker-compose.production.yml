@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+
+  redis-master:
+    image: redis:6.2
+    command: redis-server /usr/local/etc/redis/redis-master.conf
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/master:/var/lib/redis
+      - ./redis.conf:/usr/local/etc/redis/redis-master.conf
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - traefik-network
+
+  redis-slave:
+    image: redis:6.2
+    command: redis-server /usr/local/etc/redis/redis-slave.conf --slaveof redis-master 6379
+    volumes:
+      - ./data/slave:/var/lib/redis
+      - ./redis.conf:/usr/local/etc/redis/redis-slave.conf
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - traefik-network
+
+  redis-sentinel:
+    image: redis:6.2
+    command: >
+      redis-sentinel /usr/local/etc/sentinel.conf --sentinel monitor mymaster redis-master 6379 2
+    volumes:
+      - ./sentinel.conf:/usr/local/etc/sentinel.conf
+    ports:
+      - "26379:26379"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+    networks:
+      - traefik-network
+
+networks:
+  traefik-network:
+    external: true
