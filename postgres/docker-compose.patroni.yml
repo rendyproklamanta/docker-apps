@@ -64,7 +64,6 @@ services:
     container_name: pgpool
     volumes:
       - ./conf/pgpool.conf:/etc/pgpool2/pgpool.conf
-      - ./conf/failover.sh:/etc/pgpool2/failover.sh
     depends_on:
       - postgres-primary
       - postgres-replica
@@ -87,6 +86,91 @@ services:
           memory: "512M"
     ports:
       - "5432:5432"
+    networks:
+      - postgres-network
+
+  patroni:
+    image: patroni:latest
+    container_name: patroni
+    volumes:
+      - ./conf/patroni.yml:/etc/patroni/patroni.yml
+    depends_on:
+      - postgres-primary
+      - postgres-replica
+      - etcd
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
+    networks:
+      - postgres-network
+
+  etcd:
+    image: quay.io/coreos/etcd:latest
+    container_name: etcd
+    volumes:
+      - ./conf/etcd.conf:/etc/etcd/etcd.conf
+      - ./data/etcd:/etcd-data
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    command: etcd --config-file /etc/etcd/etcd.conf
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
+    networks:
+      - postgres-network
+
+  consul:
+    image: consul:latest
+    container_name: consul
+    command: agent -dev -client=0.0.0.0
+    ports:
+      - "8500:8500"
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
     networks:
       - postgres-network
 

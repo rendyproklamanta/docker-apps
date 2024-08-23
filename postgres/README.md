@@ -20,7 +20,7 @@ cd /var/lib/psql
 unzip postgres.zip 
 ```
 
-- Create directory and change permission
+- Create directory data and change permission
 
 ```shell
 mkdir -p /var/lib/psql/data
