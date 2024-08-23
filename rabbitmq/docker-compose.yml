@@ -1,0 +1,113 @@
+version: "3.8"
+
+services:
+  rabbitmq1:
+    image: rabbitmq:3-management
+    hostname: rabbitmq1
+    container_name: rabbitmq1
+    env_file: .env
+    environment:
+      - RABBITMQ_NODENAME=rabbit@rabbitmq1
+    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq1.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
+    volumes:
+      - ./data/rabbitmq1:/var/lib/rabbitmq
+    networks:
+      - rabbitmq_cluster
+
+  rabbitmq2:
+    image: rabbitmq:3-management
+    hostname: rabbitmq2
+    container_name: rabbitmq2
+    env_file: .env
+    environment:
+      - RABBITMQ_NODENAME=rabbit@rabbitmq2
+    depends_on:
+      - rabbitmq1
+    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq2.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
+    volumes:
+      - ./data/rabbitmq2:/var/lib/rabbitmq
+    networks:
+      - rabbitmq_cluster
+
+  rabbitmq3:
+    image: rabbitmq:3-management
+    hostname: rabbitmq3
+    container_name: rabbitmq3
+    env_file: .env
+    environment:
+      - RABBITMQ_NODENAME=rabbit@rabbitmq3
+    depends_on:
+      - rabbitmq1
+      - rabbitmq2
+    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq3.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
+    volumes:
+      - ./data/rabbitmq3:/var/lib/rabbitmq
+    networks:
+      - rabbitmq_cluster
+
+  rabbitmq_proxy:
+    image: haproxy:alpine
+    container_name: rabbitmq_proxy
+    ports:
+      - "5672:5672" # RabbitMQ port
+      - "15672:15672" # RabbitMQ Management UI port
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    depends_on:
+      - rabbitmq1
+      - rabbitmq2
+      - rabbitmq3
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: "256M"
+        reservations:
+          cpus: "0.1"
+          memory: "128M"
+    networks:
+      - rabbitmq_cluster
+
+networks:
+  rabbitmq_cluster:
+    external: true

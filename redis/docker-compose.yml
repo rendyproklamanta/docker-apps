@@ -1,7 +1,6 @@
 version: "3.8"
 
 services:
-
   redis-master:
     image: redis:6.2
     command: redis-server /usr/local/etc/redis/redis-master.conf
@@ -15,6 +14,21 @@ services:
       placement:
         constraints:
           - node.role == manager
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
     networks:
       - traefik-network
 
@@ -29,6 +43,21 @@ services:
       placement:
         constraints:
           - node.role == manager
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"
     networks:
       - traefik-network
 
@@ -45,6 +74,21 @@ services:
       placement:
         constraints:
           - node.role == manager
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: "256M"
+        reservations:
+          cpus: "0.1"
+          memory: "128M"
     networks:
       - traefik-network
 

@@ -10,6 +10,10 @@ mkdir -p /var/lib/redis
 
 - Download source : <https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Frendyproklamanta%2Fdocker-apps%2Ftree%2Fmain%2Fredis>
 
+```shell
+unzip redis.zip 
+```
+
 ## Add port to firewall
 
 ```shell

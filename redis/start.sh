@@ -9,4 +9,4 @@ chmod -R 777 data
 
 # Deploy
 docker stack rm redis
-docker stack deploy --compose-file docker-compose.production.yml --detach=false redis
+docker stack deploy --compose-file docker-compose.yml --detach=false redis

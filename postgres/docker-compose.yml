@@ -1,36 +1,129 @@
-version: '3'
+version: "3"
 
 services:
-  postgres:
-    image: postgres
+  postgres-primary:
+    image: postgres:15
+    container_name: postgres-primary
     env_file:
       - .env
-    ports:
-      - 5432:5432
     volumes:
-      - ./data:/var/lib/postgresql/data
-      - ./postgresql.conf:/etc/postgresql/postgresql.conf
-    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+      - ./data/primary:/var/lib/postgresql/data
+      - ./conf/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "2G"
+        reservations:
+          cpus: "0.5"
+          memory: "1G"
     networks:
-      - bridge
-      - postgres
+      - postgres-network
+
+  postgres-replica:
+    image: postgres:15
+    container_name: postgres-replica
+    env_file:
+      - .env
+    volumes:
+      - ./data/replica:/var/lib/postgresql/data
+      - ./conf/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "2G"
+        reservations:
+          cpus: "0.5"
+          memory: "1G"
+    networks:
+      - postgres-network
+
+  pgpool:
+    image: pgpool/pgpool:4.2
+    container_name: pgpool
+    volumes:
+      - ./conf/pgpool.conf:/etc/pgpool2/pgpool.conf
+      - ./conf/failover.sh:/etc/pgpool2/failover.sh
+    depends_on:
+      - postgres-primary
+      - postgres-replica
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres-network
 
   phppgadmin:
     image: dpage/pgadmin4
     env_file:
       - .env
     volumes:
-       - ./servers.json:/pgadmin4/servers.json # preconfigured servers/connections
+      - ./servers.json:/pgadmin4/servers.json # preconfigured servers/connections
+    depends_on:
+      - postgres-primary
+      - postgres-replica
+      - pgpool
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        window: 120s
+        max_attempts: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "1G"
+        reservations:
+          cpus: "0.25"
+          memory: "512M"
     ports:
       - 8080:80
-    depends_on:
-      - postgres
     networks:
-      - bridge
-      - postgres
+      - postgres-network
 
 networks:
   postgres:
     external: true
-  bridge:
-    driver: bridge
+  # bridge:
+  #   driver: bridge
