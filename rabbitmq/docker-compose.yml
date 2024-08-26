@@ -4,7 +4,6 @@ services:
   rabbitmq1:
     image: rabbitmq:3-management
     hostname: rabbitmq1
-    container_name: rabbitmq1
     env_file: .env
     environment:
       - RABBITMQ_NODENAME=rabbit@rabbitmq1
@@ -20,17 +19,17 @@ services:
     volumes:
       - ./data/rabbitmq1:/var/lib/rabbitmq
       - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
-    entrypoint: /usr/local/bin/entrypoint.sh
+    entrypoint: entrypoint.sh
     networks:
       - rabbitmq-network
 
   rabbitmq2:
     image: rabbitmq:3-management
     hostname: rabbitmq2
-    container_name: rabbitmq2
     env_file: .env
     environment:
       - RABBITMQ_NODENAME=rabbit@rabbitmq2
+      - JOIN_CLUSTER_HOST=rabbitmq1
     depends_on:
       - rabbitmq1
     deploy:
@@ -45,17 +44,17 @@ services:
     volumes:
       - ./data/rabbitmq2:/var/lib/rabbitmq
       - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
-    entrypoint: /usr/local/bin/entrypoint.sh
+    entrypoint: entrypoint.sh
     networks:
       - rabbitmq-network
 
   rabbitmq3:
     image: rabbitmq:3-management
     hostname: rabbitmq3
-    container_name: rabbitmq3
     env_file: .env
     environment:
       - RABBITMQ_NODENAME=rabbit@rabbitmq3
+      - JOIN_CLUSTER_HOST=rabbitmq1
     depends_on:
       - rabbitmq1
       - rabbitmq2
@@ -71,13 +70,12 @@ services:
     volumes:
       - ./data/rabbitmq3:/var/lib/rabbitmq
       - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
-    entrypoint: /usr/local/bin/entrypoint.sh
+    entrypoint: entrypoint.sh
     networks:
       - rabbitmq-network
 
   rabbitmq_proxy:
     image: haproxy:alpine
-    container_name: rabbitmq_proxy
     ports:
       - "5672:5672" # RabbitMQ port
       - "15672:15672" # RabbitMQ Management UI port
