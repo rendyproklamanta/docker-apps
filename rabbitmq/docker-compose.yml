@@ -8,7 +8,6 @@ services:
     env_file: .env
     environment:
       - RABBITMQ_NODENAME=rabbit@rabbitmq1
-    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq1.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
     deploy:
       replicas: 1
       update_config:
@@ -18,13 +17,12 @@ services:
         limits:
           cpus: "0.5"
           memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
     volumes:
       - ./data/rabbitmq1:/var/lib/rabbitmq
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
     networks:
-      - rabbitmq_cluster
+      - rabbitmq-network
 
   rabbitmq2:
     image: rabbitmq:3-management
@@ -35,7 +33,6 @@ services:
       - RABBITMQ_NODENAME=rabbit@rabbitmq2
     depends_on:
       - rabbitmq1
-    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq2.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
     deploy:
       replicas: 1
       update_config:
@@ -45,13 +42,12 @@ services:
         limits:
           cpus: "0.5"
           memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
     volumes:
       - ./data/rabbitmq2:/var/lib/rabbitmq
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
     networks:
-      - rabbitmq_cluster
+      - rabbitmq-network
 
   rabbitmq3:
     image: rabbitmq:3-management
@@ -63,7 +59,6 @@ services:
     depends_on:
       - rabbitmq1
       - rabbitmq2
-    command: bash -c "rabbitmqctl wait /var/lib/rabbitmq/mnesia/rabbit@rabbitmq3.pid && rabbitmqctl set_policy ha-all \"\" '{\"ha-mode\":\"all\",\"ha-sync-mode\":\"automatic\"}' || true"
     deploy:
       replicas: 1
       update_config:
@@ -73,13 +68,12 @@ services:
         limits:
           cpus: "0.5"
           memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
     volumes:
       - ./data/rabbitmq3:/var/lib/rabbitmq
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+    entrypoint: /usr/local/bin/entrypoint.sh
     networks:
-      - rabbitmq_cluster
+      - rabbitmq-network
 
   rabbitmq_proxy:
     image: haproxy:alpine
@@ -102,12 +96,9 @@ services:
         limits:
           cpus: "0.2"
           memory: "256M"
-        reservations:
-          cpus: "0.1"
-          memory: "128M"
     networks:
-      - rabbitmq_cluster
+      - rabbitmq-network
 
 networks:
-  rabbitmq_cluster:
+  rabbitmq-network:
     external: true

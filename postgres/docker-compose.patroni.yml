@@ -24,9 +24,6 @@ services:
         limits:
           cpus: "1.0"
           memory: "2G"
-        reservations:
-          cpus: "0.5"
-          memory: "1G"
     networks:
       - postgres-network
 
@@ -53,9 +50,6 @@ services:
         limits:
           cpus: "1.0"
           memory: "2G"
-        reservations:
-          cpus: "0.5"
-          memory: "1G"
     networks:
       - postgres-network
 
@@ -81,9 +75,6 @@ services:
         limits:
           cpus: "0.5"
           memory: "1G"
-        reservations:
-          cpus: "0.25"
-          memory: "512M"
     ports:
       - "5432:5432"
     networks:
@@ -112,9 +103,6 @@ services:
         limits:
           cpus: "0.5"
           memory: "1G"
-        reservations:
-          cpus: "0.25"
-          memory: "512M"
     networks:
       - postgres-network
 
@@ -142,9 +130,6 @@ services:
         limits:
           cpus: "0.5"
           memory: "1G"
-        reservations:
-          cpus: "0.25"
-          memory: "512M"
     networks:
       - postgres-network
 
@@ -168,9 +153,6 @@ services:
         limits:
           cpus: "0.5"
           memory: "1G"
-        reservations:
-          cpus: "0.25"
-          memory: "512M"
     networks:
       - postgres-network
 
@@ -198,9 +180,6 @@ services:
         limits:
           cpus: "0.5"
           memory: "1G"
-        reservations:
-          cpus: "0.25"
-          memory: "512M"
     ports:
       - 8080:80
     networks:

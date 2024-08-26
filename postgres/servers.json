@@ -5,7 +5,7 @@
          "Host": "postgres",
          "Port": 5432,
          "Username": "postgres_usr",
-         "Password": "Rx5uQ5TAlh0C"
+         "Password": "POSTGRES_PASSWORD_SET"
       }
    ]
 }

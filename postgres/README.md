@@ -1,10 +1,4 @@
-# postgres + pgpool
-
-- Create Network
-
-```shell
-docker network create --driver overlay postgres-network
-```
+# postgres + pgpool + patroni
 
 - Download source
 
@@ -25,6 +19,20 @@ unzip postgres.zip
 ```shell
 mkdir -p /var/lib/psql/data
 chmod -R 777 /var/lib/psql/data
+```
+
+- Change Password by using text replacing tool
+
+```shell
+cd /var/lib/psql
+find -type f -exec sed -i 's/POSTGRES_PASSWORD_SET/YOUR_PASSWORD/g' {} +
+find -type f -exec sed -i 's/PGADMIN_DEFAULT_PASSWORD_SET/YOUR_PASSWORD/g' {} +
+```
+
+- Start command
+
+```shell
+chmod +x start.sh && ./start.sh
 ```
 
 - Access phpPgAdmin from browser <http://localhost:8000>

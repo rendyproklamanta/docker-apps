@@ -33,9 +33,10 @@ deploy:
       limits:
          cpus: "0.5"
          memory: 500M
-      reservations:
-         cpus: "0.1"
-         memory: 100M
+      # (optional) if you need assign reservation resource for the container
+      # reservations:
+      #    cpus: "0.1"
+      #    memory: 100M
    restart_policy:
       condition: on-failure
       delay: 5s

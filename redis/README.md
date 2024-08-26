@@ -1,17 +1,23 @@
 # Redis + Sentinel
 
-## Create dir for redis
+## Create network
 
 ```shell
-mkdir -p /var/lib/redis
+docker network create --driver overlay redis-network
 ```
 
-## Download from github
-
-- Download source : <https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Frendyproklamanta%2Fdocker-apps%2Ftree%2Fmain%2Fredis>
+## Clone Repository
 
 ```shell
-unzip redis.zip 
+git clone https://github.com/rendyproklamanta/docker-apps.git .
+mv redis /var/lib/redis
+rm -rf ./*
+```
+
+## Go to directory
+
+```shell
+cd /var/lib/redis
 ```
 
 ## Add port to firewall

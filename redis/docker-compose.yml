@@ -26,11 +26,8 @@ services:
         limits:
           cpus: "0.5"
           memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
     networks:
-      - traefik-network
+      - redis-network
 
   redis-slave:
     image: redis:6.2
@@ -55,11 +52,8 @@ services:
         limits:
           cpus: "0.5"
           memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
     networks:
-      - traefik-network
+      - redis-network
 
   redis-sentinel:
     image: redis:6.2
@@ -85,12 +79,9 @@ services:
         limits:
           cpus: "0.2"
           memory: "256M"
-        reservations:
-          cpus: "0.1"
-          memory: "128M"
     networks:
-      - traefik-network
+      - redis-network
 
 networks:
-  traefik-network:
+  redis-network:
     external: true
