@@ -9,9 +9,11 @@ docker network create --driver overlay redis-network
 ## Clone Repository
 
 ```shell
+mkdir -p ~/clone
+cd ~/clone
 git clone https://github.com/rendyproklamanta/docker-apps.git .
 mv redis /var/lib/redis
-rm -rf ./*
+rm -rf ./* ./.*
 ```
 
 ## Go to directory

@@ -1,27 +1,35 @@
 # postgres + pgpool + patroni
 
-- Download source
+## Add port to firewall
 
 ```shell
-mkdir -p /var/lib/psql
+ufw allow 5432
+```
+
+## Clone Repository
+
+```shell
+mkdir -p ~/clone
+cd ~/clone
+git clone https://github.com/rendyproklamanta/docker-apps.git .
+mv postgres /var/lib/psql
+rm -rf ./* ./.*
+```
+
+## Go to directory
+
+```shell
 cd /var/lib/psql
 ```
 
-- Download source
-<https://download-directory.github.io/?url=https%3A%2F%2Fgithub.com%2Frendyproklamanta%2Fdocker-apps%2Ftree%2Fmain%2Fpostgres>
-
-```shell
-unzip postgres.zip 
-```
-
-- Create directory data and change permission
+## Create directory data and change permission
 
 ```shell
 mkdir -p /var/lib/psql/data
 chmod -R 777 /var/lib/psql/data
 ```
 
-- Change Password by using text replacing tool
+## Change Password by using text replacing tool
 
 ```shell
 cd /var/lib/psql
@@ -29,7 +37,7 @@ find -type f -exec sed -i 's/POSTGRES_PASSWORD_SET/YOUR_PASSWORD/g' {} +
 find -type f -exec sed -i 's/PGADMIN_DEFAULT_PASSWORD_SET/YOUR_PASSWORD/g' {} +
 ```
 
-- Start command
+## Start command
 
 ```shell
 chmod +x start.sh && ./start.sh
