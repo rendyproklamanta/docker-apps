@@ -20,7 +20,7 @@ mkdir -p ~/clone
 cd ~/clone
 git clone https://github.com/rendyproklamanta/docker-apps.git .
 mv rabbitmq /var/lib/rabbitmq
-rm -rf ./*
+rm -rf ./* ./.*
 ```
 
 ## Go to directory

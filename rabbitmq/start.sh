@@ -9,6 +9,7 @@ mkdir -p data/rabbitmq3
 
 # Set permission
 chmod -R 777 data
+chmod +x entrypoint.sh
 
 # Deploy
 docker stack rm rabbitmq
