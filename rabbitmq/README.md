@@ -16,6 +16,8 @@ ufw allow 15672
 ## Clone Repository
 
 ```shell
+mkdir -p ~/clone
+cd ~/clone
 git clone https://github.com/rendyproklamanta/docker-apps.git .
 mv rabbitmq /var/lib/rabbitmq
 rm -rf ./*
