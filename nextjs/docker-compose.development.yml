@@ -2,7 +2,6 @@ version: "3.4"
 
 services:
   nextjs-dev:
-    container_name: nextjs-dev
     build:
       context: .
       dockerfile: ./Dockerfile.development

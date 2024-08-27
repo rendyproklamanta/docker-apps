@@ -12,4 +12,4 @@ chmod -R 777 data
 
 # Deploy
 docker stack rm postgres
-docker stack deploy --compose-file docker-compose.yml --detach=false postgres
+docker stack deploy --compose-file docker-compose.no-patroni.yml --detach=false postgres

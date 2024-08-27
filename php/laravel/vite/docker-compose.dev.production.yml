@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
    bitici-production:
-      container_name: bitici-production
       entrypoint: entrypoint.sh
       build:
          context: .

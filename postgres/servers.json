@@ -2,10 +2,10 @@
    "Servers": [
       {
          "Name": "My PostgreSQL Server",
-         "Host": "postgres",
+         "Host": "pgpool",
          "Port": 5432,
-         "Username": "postgres_usr",
-         "Password": "POSTGRES_PASSWORD_SET"
+         "Username": "postgres",
+         "Password": ""
       }
    ]
 }

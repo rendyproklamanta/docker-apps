@@ -2,7 +2,6 @@ version: "3.7"
 
 services:
   php:
-    container_name: myapp-php
     image: randyproxz/php7.4-fpm-alpine
     env_file:
       - .env.development
@@ -16,7 +15,6 @@ services:
       - bridge
 
   myapp-nginx:
-    container_name: myapp-nginx
     depends_on:
       - myapp-php
     image: nginx:latest
@@ -33,7 +31,6 @@ services:
       - bridge
       
   myapp-cron:
-    container_name: myapp-cron
     image: randyproxz/php7.4-fpm-alpine
     env_file:
       - .env.development
