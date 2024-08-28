@@ -1,7 +1,7 @@
 {
    "Servers": {
        "1": {
-           "Name": "pgpool",
+           "Name": "postgres",
            "Group": "Servers",
            "Host": "pgpool",
            "Port": 5432,

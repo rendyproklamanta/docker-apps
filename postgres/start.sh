@@ -10,12 +10,12 @@ docker stack rm postgres
 # Deploy primary
 cd replication/primary
 chmod +x init.sh && ./init.sh
-cd../../
+cd ../../
 
 # Deploy replica1
 cd replication/replica1
 chmod +x init.sh && ./init.sh
-cd../../
+cd ../../
 
 #### Deploy services ####
 
@@ -24,14 +24,14 @@ cd services
 # Deploy pgpool
 cd pgpool
 chmod +x init.sh && ./init.sh
-cd../
+cd ../
 
 # Deploy backup
 cd backup
 chmod +x init.sh && ./init.sh
-cd../
+cd ../
 
 # Deploy pgadmin
 cd pgadmin
 chmod +x init.sh && ./init.sh
-cd.../../
+cd ../../

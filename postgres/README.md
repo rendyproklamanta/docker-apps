@@ -45,4 +45,23 @@ find -type f -exec sed -i 's/PGADMIN_DEFAULT_PASSWORD_SET/YOUR_PASSWORD/g' {} +
 chmod +x start.sh && ./start.sh
 ```
 
-- Access phpPgAdmin from browser <http://localhost:8000>
+## Web Pgadmin
+
+Access phpPgAdmin from browser <http://localhost:8000>
+
+## Check node
+
+```shell
+$ psql -U postgres -h localhost -p 5432 -d postgres
+
+Use password: POSTGRES_PASSWORD_SET
+
+CREATE TABLE users (id SERIAL PRIMARY KEY, email TEXT NOT NULL);
+INSERT INTO users (email) VALUES ('john@example.com'), ('michael@example.com'), ('robert@example.com');
+SELECT * FROM users;
+
+... repeat couple of times
+$ SELECT * FROM users;
+
+$ SHOW pool_nodes;
+```

@@ -3,6 +3,7 @@ version: "3"
 services:
   pg-1:
     image: bitnami/postgresql-repmgr:14
+    hostname: pg-1
     ports:
       - 5432
     volumes:
