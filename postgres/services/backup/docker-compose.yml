@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  postgres-cron-backup:
+    image: ghcr.io/mentos1386/postgres-cron-backup
+    depends_on:
+      pgpool:
+        condition: service_healthy
+    volumes:
+      - ./data:/backup
+    environment:
+      - POSTGRES_HOST=pgpool
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASS=POSTGRES_PASSWORD_SET
+      - MAX_BACKUPS=6
+      - INIT_BACKUP=1
+      - CRON_TIME=0 */6 * * *
+      - GZIP_LEVEL=9
+    networks:
+      - postgres-network
+
+networks:
+   postgres-network:
+      external: true

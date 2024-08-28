@@ -1,5 +1,6 @@
 #!/bin/bash
 
+docker swarm init
 docker network create --driver overlay postgres-network
 
 # Remove stack
@@ -12,13 +13,12 @@ cd replication/primary
 chmod +x init.sh && ./init.sh
 cd../../
 
-# Deploy replica1
-cd replication/replica1
-chmod +x init.sh && ./init.sh
-cd../../
+# # Deploy replica1
+# cd replication/replica1
+# chmod +x init.sh && ./init.sh
+# cd../../
 
 #### Deploy services ####
-
 cd services
 
 # Deploy pgpool

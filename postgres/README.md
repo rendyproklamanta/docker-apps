@@ -4,10 +4,6 @@
 
 ```shell
 ufw allow 5432
-ufw allow 8500
-ufw allow 2379
-ufw allow 2380
-ufw allow 8500
 ufw allow 8080
 ufw allow 80
 ```

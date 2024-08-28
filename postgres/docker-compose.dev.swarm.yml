@@ -23,7 +23,7 @@ services:
       retries: 10
       start_period: 5s
     networks:
-      - bridge
+      - postgres-network
 
   pg-1:
     image: bitnami/postgresql-repmgr:14
@@ -47,15 +47,10 @@ services:
       retries: 10
       start_period: 5s
     networks:
-      - bridge
+      - postgres-network
 
   pgpool:
     image: bitnami/pgpool:4
-    depends_on:
-      pg-0:
-        condition: service_healthy
-      pg-1:
-        condition: service_healthy
     ports:
       - 5432:5432
     environment:
@@ -79,8 +74,8 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - bridge
+      - postgres-network
 
 networks:
-  bridge:
-    driver: bridge
+  postgres-network:
+    external: true

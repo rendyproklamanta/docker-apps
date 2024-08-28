@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  phppgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      pgpool:
+        condition: service_healthy
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@postgres.db
+      - PGADMIN_DEFAULT_PASSWORD=PGADMIN_DEFAULT_PASSWORD_SET
+    volumes:
+      - ./data:/var/lib/pgadmin
+      # - ./servers.json:/var/lib/pgadmin/storage/admin_postgres.db/servers.json
+    ports:
+      - 8080:80
+    networks:
+      - postgres-network
+
+networks:
+   postgres-network:
+      external: true

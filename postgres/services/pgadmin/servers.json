@@ -1,0 +1,12 @@
+{
+   "Servers": {
+       "1": {
+           "Name": "pgpool",
+           "Group": "Servers",
+           "Host": "pgpool",
+           "Port": 5432,
+           "MaintenanceDB": "postgres",
+           "Username": "postgres"
+       }
+   }
+}
