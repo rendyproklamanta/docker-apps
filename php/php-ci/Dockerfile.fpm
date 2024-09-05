@@ -30,19 +30,19 @@ COPY ./conf/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY ./conf/cron/supervisord.conf /etc/supervisor/conf.d/cron.conf
 ADD ./conf/cron/crontab /crontab
 
-# Entrypoint file
-COPY ./conf/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# Add worker (optional)
+#COPY ./conf/worker/supervisord.conf /etc/supervisor/conf.d/worker.conf
 
 # Give permission to logs dir (optional)
 #RUN chmod -R 777 /usr/share/nginx/html/application/logs
 #RUN chmod -R 777 /usr/share/nginx/html/storage/logs
+
+# Entrypoint file
+COPY ./conf/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Healthcheck
 COPY ./conf/php-fpm-healthcheck /usr/local/bin/php-fpm-healthcheck
 RUN chmod +x /usr/local/bin/php-fpm-healthcheck
 HEALTHCHECK --interval=5m --start-period=3m --start-interval=10s \
     CMD php-fpm-healthcheck || exit 1
-
-# Set the custom entrypoint
-# ENTRYPOINT ["entrypoint.sh"]

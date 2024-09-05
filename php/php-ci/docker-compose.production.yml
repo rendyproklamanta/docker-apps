@@ -83,6 +83,27 @@ services:
     networks:
       - traefik-network
 
+  arminadaily-worker:
+    container_name: arminadaily-worker
+    image: repo.cic-webpro.com:5050/project/arminadaily/web:production
+    env_file:
+      - .env.production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+    command: sh -c "/usr/bin/supervisord -c /etc/supervisor/conf.d/worker.conf -n"
+    networks:
+      - mysql-network
+      - traefik-network
+
 networks:
   traefik-network:
     external: true
