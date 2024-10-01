@@ -7,6 +7,9 @@ services:
       - traefik-network
     env_file:
       - .env.production
+    secrets:
+      - db_user
+      - db_pass
     volumes:
       - /var/log/nginx:/var/log/nginx
       - /var/log/php:/var/log/php
@@ -103,6 +106,12 @@ services:
     networks:
       - mysql-network
       - traefik-network
+
+secrets:
+  db_user:
+    external: true
+  db_pass:
+    external: true
 
 networks:
   traefik-network:
