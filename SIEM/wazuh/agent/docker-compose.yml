@@ -1,0 +1,20 @@
+version: "3.7"
+services:
+  wazuh-agent:
+    image: wazuh/wazuh-agent:latest
+    deploy:
+      replicas: 1
+    environment:
+      #- WAZUH_MANAGER_IP=<VPS-MANAGER-IP> # IP Wazuh Manager
+      - "WAZUH_MANAGER=wazuh-manager" # Point to the Wazuh Manager
+      - "WAZUH_AGENT_NAME=wazuh-agent"
+      # - "WAZUH_API_USER=admin"
+      # - "WAZUH_API_PASSWORD=admin" # Change this to match the manager password
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Optional: to monitor Docker contain ers
+    networks:
+      - wazuh-network
+
+networks:
+  wazuh-network:
+    external: true

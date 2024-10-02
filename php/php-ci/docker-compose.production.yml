@@ -10,6 +10,9 @@ services:
     secrets:
       - db_user
       - db_pass
+    environment:
+        DB_USER_FILE: /run/secrets/db_user 
+        DB_PASS_FILE: /run/secrets/db_pass
     volumes:
       - /var/log/nginx:/var/log/nginx
       - /var/log/php:/var/log/php
@@ -77,6 +80,12 @@ services:
       - /var/log/cron:/var/log/cron
     env_file:
       - .env.production
+    secrets:
+      - db_user
+      - db_pass
+    environment:
+        DB_USER_FILE: /run/secrets/db_user 
+        DB_PASS_FILE: /run/secrets/db_pass
     deploy:
       mode: replicated
       replicas: 1
@@ -86,11 +95,17 @@ services:
     networks:
       - traefik-network
 
-  arminadaily-worker:
+  myapp-worker:
     container_name: arminadaily-worker
-    image: repo.cic-webpro.com:5050/project/arminadaily/web:production
+    image: randyproxz/php7.4-fpm-alpine:production
     env_file:
       - .env.production
+    secrets:
+      - db_user
+      - db_pass
+    environment:
+        DB_USER_FILE: /run/secrets/db_user 
+        DB_PASS_FILE: /run/secrets/db_pass
     logging:
       driver: "json-file"
       options:
