@@ -49,3 +49,14 @@ deploy:
 ```shell
 docker stack deploy --compose-file docker-compose.yml STACK_NAME
 ```
+
+## Clone specific directory only
+
+```shell
+mkdir -p ~/clone
+cd ~/clone
+git clone https://github.com/rendyproklamanta/docker-apps.git .
+mkdir -p /var/lib/directory
+mv directory /var/lib/directory
+rm -rf ./* ./.*
+```
