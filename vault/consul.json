@@ -1,0 +1,11 @@
+{
+   "datacenter": "dc1",
+   "data_dir": "/consul/data",
+   "log_level": "INFO",
+   "server": true,
+   "ui": true,
+   "client_addr": "0.0.0.0",
+   "bootstrap_expect": 1,
+   "retry_join": ["consul"],
+   "encrypt": "zE1j3f9sP7hOl+N5UmE5kCq7k9mJ4OwK9Ay9e3lW"
+}
