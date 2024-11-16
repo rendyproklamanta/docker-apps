@@ -1,7 +1,4 @@
-import os
-import time
 from flask import Flask, jsonify
-from redis import Redis
 from dotenv import load_dotenv
 from redis_helper import init_redis, get_redis
 
