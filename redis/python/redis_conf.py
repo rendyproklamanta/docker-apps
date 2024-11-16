@@ -7,12 +7,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration from .env
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
-REDIS_MASTER_NAME = os.getenv("REDIS_MASTER_NAME", "mymaster")
+SENTINEL_MASTER = os.getenv("SENTINEL_MASTER", "mymaster")
 SENTINEL_HOST = os.getenv("SENTINEL_HOST")
 SENTINEL_PORT = int(os.getenv("SENTINEL_PORT", 26379))
 REDIS_DIRECT_HOST = os.getenv("REDIS_DIRECT_HOST")
 REDIS_DIRECT_PORT = int(os.getenv("REDIS_DIRECT_PORT", 6379))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 
 # Connect to Redis Sentinel
 sentinel = Sentinel(
@@ -24,7 +24,7 @@ sentinel = Sentinel(
 # Get a connection to Redis, using Sentinel if available, or falling back to direct connection
 def get_redis_connection():
   if(SENTINEL_HOST):
-    master = sentinel.master_for(REDIS_MASTER_NAME)
+    master = sentinel.master_for(SENTINEL_MASTER)
     return master
   
   if(REDIS_DIRECT_HOST):
