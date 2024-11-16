@@ -3,7 +3,7 @@ import time
 from flask import Flask, jsonify
 from redis import Redis
 from dotenv import load_dotenv
-from redis_helper import get_redis
+from redis_helper import init_redis, get_redis
 
 # Load environment variables from .env file
 load_dotenv()
@@ -11,13 +11,16 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
+# Initialize Redis on app startup
+init_redis(app)
+
 @app.route('/')
 def index():
     return jsonify({"message": "Flask app with Redis integration!"})
 
 @app.route('/redis-test')
 def redis_test():
-    # Perform operations with the redis master --------------
+    # Perform operations with the redis --------------
     redis_client = get_redis()
     if redis_client:
         try:

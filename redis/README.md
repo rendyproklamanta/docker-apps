@@ -33,13 +33,14 @@ ufw allow 26379
 
 ```shell
 nano redis.conf
+nano sentinel.conf
 ```
 
-- Change MY_PASSWORD_REDIS replace with yours
+- Change PASSWORD_REDIS_SET replace with yours
 
 ```shell
-requirepass MY_PASSWORD_REDIS
-masterauth MY_PASSWORD_REDIS
+requirepass PASSWORD_REDIS_SET
+masterauth PASSWORD_REDIS_SET
 ```
 
 ## Start redis

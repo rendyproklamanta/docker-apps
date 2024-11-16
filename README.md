@@ -56,7 +56,7 @@ docker stack deploy --compose-file docker-compose.yml STACK_NAME
 mkdir -p ~/clone
 cd ~/clone
 git clone https://github.com/rendyproklamanta/docker-apps.git .
-mkdir -p /var/lib/directory
-mv directory /var/lib/directory
-rm -rf ./* ./.*
+mv directory /var/lib
+cd /var/lib/directory
+rm -rf ~/clone
 ```
