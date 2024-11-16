@@ -11,7 +11,7 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 REDIS_MASTER_NAME = os.getenv("REDIS_MASTER_NAME", "mymaster")
 SENTINEL_HOST = os.getenv("SENTINEL_HOST")
 SENTINEL_PORT = int(os.getenv("SENTINEL_PORT", 26379))
-REDIS_DIRECT_HOST = os.getenv("REDIS_DIRECT_HOST", "127.0.0.1")
+REDIS_DIRECT_HOST = os.getenv("REDIS_DIRECT_HOST")
 REDIS_DIRECT_PORT = int(os.getenv("REDIS_DIRECT_PORT", 6379))
 
 # Connect to Redis Sentinel
