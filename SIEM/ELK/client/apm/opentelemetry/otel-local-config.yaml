@@ -1,0 +1,24 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: "0.0.0.0:4317"
+      http:
+        endpoint: "0.0.0.0:55681"
+
+processors:
+  batch:
+    timeout: 5s
+
+exporters:
+  elastic:
+    apm_server_url: "http://localhost:8200" # Elastic APM server URL
+    service_name: "codeigniter3-app"
+    secret_token: "your_apm_secret_token" # Your APM token, if needed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [elastic]

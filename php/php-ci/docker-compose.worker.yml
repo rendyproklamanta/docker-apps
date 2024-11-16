@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  myapp-worker:
+    container_name: myapp-worker
+    image: randyproxz/php7.4-fpm-alpine:production
+    env_file:
+      - .env.production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "2"
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        order: start-first
+        delay: 1s
+    command: sh -c "/usr/bin/supervisord -c /etc/supervisor/conf.d/worker.conf -n"
+    networks:
+      - mysql-network
+      - traefik-network
+
+secrets:
+  db_user:
+    external: true
+  db_pass:
+    external: true
+
+networks:
+  traefik-network:
+    external: true

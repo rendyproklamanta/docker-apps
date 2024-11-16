@@ -1,0 +1,33 @@
+version: "3.7"
+
+services:
+  myapp-cron:
+    image: randyproxz/php7.4-fpm-alpine:production
+    volumes:
+      - /var/log/cron:/var/log/cron
+    env_file:
+      - .env.production
+    secrets:
+      - db_user
+      - db_pass
+    environment:
+        DB_USER_FILE: /run/secrets/db_user 
+        DB_PASS_FILE: /run/secrets/db_pass
+    deploy:
+      mode: replicated
+      replicas: 1
+      update_config:
+        delay: 1s
+    command: sh -c "/usr/bin/crontab /crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/cron.conf -n"
+    networks:
+      - traefik-network
+
+secrets:
+  db_user:
+    external: true
+  db_pass:
+    external: true
+
+networks:
+  traefik-network:
+    external: true

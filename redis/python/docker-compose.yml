@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  python:
+    container_name: python
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    env_file:
+      - .env
+    environment:
+      - FLASK_APP=main.py
+      - FLASK_DEBUG=1 # Enables hot reload and debug mode
+    command: ["flask", "run", "--host=0.0.0.0", "--debugger"]
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/app
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
