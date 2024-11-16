@@ -12,7 +12,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # Initialize Redis on app startup
-init_redis(app)
+init_redis()
 
 @app.route('/')
 def index():
@@ -20,7 +20,7 @@ def index():
 
 @app.route('/redis-test')
 def redis_test():
-    # Perform operations with the redis --------------
+    # Perform operations with the redis -------------------
     redis_client = get_redis()
     if redis_client:
         try:
@@ -32,7 +32,7 @@ def redis_test():
             return jsonify({"error": f"Redis operation failed: {e}"}), 500
     else:
       return jsonify({"error": "Redis not initialized"}), 500
-    # END OF operations ----------------------------------------
+    # END OF Redis operations --------------------------------
 
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=5000)

@@ -24,7 +24,7 @@ sentinel = Sentinel(
 # Get a connection to Redis, using Sentinel if available, or falling back to direct connection
 def get_redis_connection():
   if(SENTINEL_HOST):
-    master = sentinel.master_for(REDIS_MASTER_NAME, socket_timeout=0.1)
+    master = sentinel.master_for(REDIS_MASTER_NAME)
     return master
   
   if(REDIS_DIRECT_HOST):
