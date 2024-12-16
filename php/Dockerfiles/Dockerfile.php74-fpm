@@ -59,7 +59,8 @@ RUN docker-php-ext-install \
     sockets \
     sodium \
     opcache \
-    bcmath
+    bcmath \
+    pcntl
 
 # Install MongoDB PHP driver
 RUN pecl install mongodb && docker-php-ext-enable mongodb

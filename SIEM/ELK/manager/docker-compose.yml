@@ -39,6 +39,7 @@ services:
     hostname: logstash
     ports:
       - "5044:5044"
+      - "9600:9600"  # Logstash API
     volumes:
       - ./logstash:/usr/share/logstash/pipeline
     deploy:
