@@ -1,53 +1,24 @@
-# Stage 1: Build your PHP application with PHP-FPM
-FROM php:7.4-fpm-alpine
-
-USER root
+# Build your PHP application with PHP-FPM (ubuntu)
+FROM php:7.4-fpm
 
 ENV COMPOSER_CACHE_DIR /tmp
 
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Install mandatory
-RUN apk update
-RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata git
+# Update package lists and install mandatory tools
+RUN apt-get update && apt-get install -y \
+    wget bash supervisor tzdata git curl unzip \
+    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zlib1g-dev \
+    libxslt1-dev libxml2-dev libcurl4-openssl-dev libssl-dev libsodium-dev \
+    libonig-dev libicu-dev g++ gettext libbz2-dev libmemcached-dev \
+    gcc make autoconf libc-dev pkg-config cron \
+    postgresql libpq-dev libmcrypt-dev spawn-fcgi \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Install required library for extensions
-RUN apk add --no-cache \
-    libpng \
-    libpng-dev \
-    libjpeg-turbo \
-    libjpeg-turbo-dev \
-    freetype \
-    freetype-dev \
-    libzip \
-    libzip-dev \
-    zlib \
-    zlib-dev \
-    libxslt-dev \
-    libxml2 \
-    libxml2-dev \
-    curl-dev \
-    openssl-dev \
-    libsodium-dev \
-    oniguruma-dev \
-    icu-libs \
-    icu-dev \
-    g++ \
-    gettext-dev \
-    bzip2-dev \
-    libmemcached-dev \
-    dcron \
-    gcc \
-    g++ \
-    make \
-    autoconf \
-    libc-dev \
-    pkgconfig
-
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-# Install PHP extensions
-RUN docker-php-ext-install \
+# Configure GD extension
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
     mysqli pdo pdo_mysql \
     intl \
     zip \
@@ -60,21 +31,14 @@ RUN docker-php-ext-install \
     sodium \
     opcache \
     bcmath \
-    pcntl
+    pcntl \
+    pdo_pgsql pgsql
 
 # Install MongoDB PHP driver
 RUN pecl install mongodb && docker-php-ext-enable mongodb
 
-# Install PostgreSQL extension
-RUN apk add --no-cache postgresql-dev libpq-dev \
-    && docker-php-ext-install pdo_pgsql pgsql
-    
 # Install mcrypt
 ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
-RUN apk --no-cache add libmcrypt-dev \
-    && docker-php-source extract \
-    && pecl install /tmp/mcrypt.tgz \
-    && docker-php-ext-enable mcrypt \
-    && docker-php-source delete
+RUN pecl install /tmp/mcrypt.tgz && docker-php-ext-enable mcrypt && rm -f /tmp/mcrypt.tgz
 
 CMD ["/usr/local/sbin/php-fpm", "-F"]

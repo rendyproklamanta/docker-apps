@@ -1,5 +1,5 @@
-# Stage 1: Build your PHP application with PHP-FPM
-FROM php:8.1-fpm-alpine
+# Build your PHP application with PHP-FPM (alpine)
+FROM php:7.4-fpm-alpine
 
 USER root
 
@@ -9,7 +9,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install mandatory
 RUN apk update
-RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata git
+RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata git nginx
 
 # Install required library for extensions
 RUN apk add --no-cache \
@@ -42,7 +42,15 @@ RUN apk add --no-cache \
     make \
     autoconf \
     libc-dev \
-    pkgconfig
+    pkgconfig \
+    cmake \
+    pcre-dev \
+    geoip-dev \
+    linux-headers \
+    python3 \
+    perl-dev \
+    gd-dev \
+    && rm -rf /var/cache/apk/*
 
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
@@ -59,7 +67,8 @@ RUN docker-php-ext-install \
     sockets \
     sodium \
     opcache \
-    bcmath
+    bcmath \
+    pcntl
 
 # Install MongoDB PHP driver
 RUN pecl install mongodb && docker-php-ext-enable mongodb
@@ -75,5 +84,15 @@ RUN apk --no-cache add libmcrypt-dev \
     && pecl install /tmp/mcrypt.tgz \
     && docker-php-ext-enable mcrypt \
     && docker-php-source delete
+
+# Download and install OpenAppSec
+RUN nginx -V &> /tmp/nginx.ver
+RUN git clone https://github.com/openappsec/attachment.git attachment
+WORKDIR attachment
+RUN chmod +x attachments/nginx/ngx_module/nginx_version_configuration.sh
+RUN attachments/nginx/ngx_module/nginx_version_configuration.sh --conf /tmp/nginx.ver build_out
+RUN cmake -DCMAKE_INSTALL_PREFIX=build_out .
+RUN make install
+RUN make package
 
 CMD ["/usr/local/sbin/php-fpm", "-F"]
