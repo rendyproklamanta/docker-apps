@@ -6,15 +6,49 @@ ENV COMPOSER_CACHE_DIR /tmp
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Update package lists and install mandatory tools
-RUN apt-get update && apt-get install -y \
-    wget bash supervisor tzdata git curl unzip \
-    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zlib1g-dev \
-    libxslt1-dev libxml2-dev libcurl4-openssl-dev libssl-dev libsodium-dev \
-    libonig-dev libicu-dev g++ gettext libbz2-dev libmemcached-dev \
-    gcc make autoconf libc-dev pkg-config cron \
-    postgresql libpq-dev libmcrypt-dev spawn-fcgi \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    bash \
+    supervisor \
+    tzdata \
+    git \
+    curl \
+    unzip \
+    nginx \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zlib1g-dev \
+    libxslt1-dev \
+    libxml2-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libsodium-dev \
+    libonig-dev \
+    libicu-dev \
+    g++ \
+    gettext \
+    libbz2-dev \
+    libmemcached-dev \
+    gcc \
+    make \
+    autoconf \
+    libc-dev \
+    pkg-config \
+    cron \
+    postgresql \
+    libpq-dev \
+    spawn-fcgi \
+    libmcrypt-dev \
+    cmake \
+    libpcre3-dev \
+    libgeoip-dev \
+    linux-headers-generic \
+    python3 \
+    perl \
+    libgd-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Configure GD extension
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -40,5 +74,15 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 # Install mcrypt
 ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
 RUN pecl install /tmp/mcrypt.tgz && docker-php-ext-enable mcrypt && rm -f /tmp/mcrypt.tgz
+
+# Download and install OpenAppSec
+RUN nginx -v 2> /tmp/nginx.ver
+RUN git clone https://github.com/openappsec/attachment.git attachment
+WORKDIR attachment
+RUN chmod +x attachments/nginx/ngx_module/nginx_version_configuration.sh
+RUN attachments/nginx/ngx_module/nginx_version_configuration.sh --conf /tmp/nginx.ver build_out
+RUN cmake -DCMAKE_INSTALL_PREFIX=build_out .
+RUN make install
+RUN make package
 
 CMD ["/usr/local/sbin/php-fpm", "-F"]

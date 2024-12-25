@@ -1,0 +1,111 @@
+# Use an Ubuntu base image
+FROM ubuntu:22.04
+
+# Set environment variables
+ENV COMPOSER_CACHE_DIR /tmp
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget \
+    bash \
+    supervisor \
+    tzdata \
+    git \
+    curl \
+    unzip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    zlib1g-dev \
+    libxslt1-dev \
+    libxml2-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libsodium-dev \
+    libonig-dev \
+    libicu-dev \
+    g++ \
+    gettext \
+    libbz2-dev \
+    libmemcached-dev \
+    gcc \
+    make \
+    autoconf \
+    libc-dev \
+    pkg-config \
+    cron \
+    postgresql \
+    libpq-dev \
+    spawn-fcgi \
+    libmcrypt-dev \
+    cmake \
+    libpcre3-dev \
+    libgeoip-dev \
+    linux-headers-generic \
+    python3 \
+    perl \
+    libgd-dev \
+    ca-certificates \
+    lsb-release \
+    software-properties-common \
+    gnupg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add the Ondřej PHP PPA to install PHP
+RUN add-apt-repository ppa:ondrej/php && apt-get update
+# Install PHP 7.4 and required extensions
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    php-pear \
+    php7.4-dev \
+    php7.4-fpm \
+    php7.4-cli \
+    php7.4-mysql \
+    php7.4-pgsql \
+    php7.4-xml \
+    php7.4-mbstring \
+    php7.4-curl \
+    php7.4-zip \
+    php7.4-intl \
+    php7.4-gd \
+    php7.4-soap \
+    php7.4-bcmath \
+    php7.4-pdo \
+    php7.4-opcache \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Enable and install Sodium extension via PECL
+RUN pecl install libsodium && \
+    echo "extension=sodium.so" >> /etc/php/7.4/fpm/php.ini && \
+    echo "extension=sodium.so" >> /etc/php/7.4/cli/php.ini
+
+# Ensure no redundant entries exist
+RUN sed -i '/extension=sodium.so/d' /etc/php/7.4/fpm/php.ini
+RUN sed -i '/extension=sodium.so/d' /etc/php/7.4/cli/php.ini
+
+# Install MongoDB PHP driver
+RUN pecl install mongodb && \
+    echo "extension=mongodb.so" >> /etc/php/7.4/fpm/php.ini && \
+    echo "extension=mongodb.so" >> /etc/php/7.4/cli/php.ini
+
+# Install mcrypt
+ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
+RUN pecl install /tmp/mcrypt.tgz && \
+    echo "extension=mcrypt.so" >> /etc/php/7.4/fpm/php.ini && \
+    echo "extension=mcrypt.so" >> /etc/php/7.4/cli/php.ini
+
+# Create directory for PHP-FPM socket and set permissions
+RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+
+# Set the listen directive for PHP-FPM
+RUN echo "listen = /run/php/php7.4-fpm.sock" >> /etc/php/7.4/fpm/pool.d/www.conf && \
+    echo "listen.owner = www-data" >> /etc/php/7.4/fpm/pool.d/www.conf && \
+    echo "listen.group = www-data" >> /etc/php/7.4/fpm/pool.d/www.conf && \
+    echo "listen.mode = 0660" >> /etc/php/7.4/fpm/pool.d/www.conf
+
+# Set default command to start PHP-FPM
+CMD ["php-fpm7.4", "-F"]

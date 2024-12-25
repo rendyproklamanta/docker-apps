@@ -1,0 +1,107 @@
+# Start with the openappsec agent image
+FROM randyproxz/openappsec-agent:latest
+
+# Add the custom repository for PHP
+RUN rm -rf /etc/apk/repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
+   echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
+# RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+
+# Update package lists
+RUN apk update
+
+# Remove any conflicting packages if already installed
+RUN apk del boost icu || true
+
+RUN apk add --no-cache \
+   build-base \
+   wget \
+   libpng \
+   libpng-dev \
+   libjpeg-turbo \
+   libjpeg-turbo-dev \
+   freetype \
+   freetype-dev \
+   libzip \
+   libzip-dev \
+   zlib \
+   zlib-dev \
+   libxslt-dev \
+   libxml2 \
+   libxml2-dev \
+   curl-dev \
+   openssl-dev \
+   libsodium-dev \
+   oniguruma-dev \
+   icu-libs \
+   icu-dev \
+   gettext-dev \
+   bzip2-dev \
+   libmemcached-dev \
+   dcron \
+   gcc \
+   g++ \
+   make \
+   autoconf \
+   libc-dev \
+   pkgconfig \
+   cmake \
+   pcre-dev \
+   geoip-dev \
+   linux-headers \
+   python3 \
+   perl-dev \
+   gd-dev
+
+# Update the apk index and install php8 and php8-fpm
+RUN apk add --no-cache \
+   php7 \
+   php7-fpm \
+   php7-opcache \
+   php7-mysqli \
+   php7-pdo \
+   php7-pdo_mysql \
+   php7-pgsql \
+   php7-mongodb \
+   php7-mbstring \
+   php7-zlib \
+   php7-curl \
+   php7-json \
+   php7-xml \
+   php7-ctype \
+   php7-bcmath \
+   php7-session \
+   php7-soap \
+   php7-gd \
+   php7-intl \
+   php7-gettext \
+   php7-xmlrpc \
+   php7-pcntl \
+   php7-pear \
+   php7-mcrypt \
+   php7-redis \
+   php7-amqp \
+   php7-sodium \
+   php7-sockets \
+   php7-bz2 \
+   php7-openssl
+
+# Ensure www-data user and group exist, if not already created
+RUN getent group www-data || addgroup -S www-data && \
+   getent passwd www-data || adduser -S www-data -G www-data
+
+# Ensure www-data user and group exist\
+RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+
+# Set the listen directive for PHP-FPM
+RUN echo "listen = /run/php/php7.4-fpm.sock" >> /etc/php7/php-fpm.d/www.conf && \
+   echo "listen.owner = www-data" >> /etc/php7/php-fpm.d/www.conf && \
+   echo "listen.group = www-data" >> /etc/php7/php-fpm.d/www.conf && \
+   echo "listen.mode = 0660" >> /etc/php7/php-fpm.d/www.conf
+
+# Command to run PHP-FPM
+CMD ["php-fpm7", "-F"]
+
+## ------------------------
+## docker build -t randyproxz/php7.4-fpm:openappsec -f Dockerfile.agent.php74 .
+## ------------------------
