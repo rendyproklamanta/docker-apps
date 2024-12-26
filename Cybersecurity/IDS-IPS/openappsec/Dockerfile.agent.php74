@@ -108,7 +108,7 @@ RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
 RUN mkdir -p /var/log/php
 
 # Copy www.conf to container
-COPY ./conf/www.conf /etc/php7/php-fpm.d/www.conf
+COPY ./conf/php/www.conf /etc/php7/php-fpm.d/www.conf
 
 # Create a symbolic link so php-fpm points to php-fpmX
 RUN ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm
