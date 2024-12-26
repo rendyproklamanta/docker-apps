@@ -103,6 +103,10 @@ RUN ln -s /usr/bin/phpize81 /usr/bin/phpize
 RUN ln -s /usr/bin/pecl81 /usr/bin/pecl
 RUN ln -s /usr/bin/php-config81 /usr/bin/php-config
 
+# Install extensions
+RUN pecl install imagick
+RUN pecl install memcached
+
 # Install AMQP extension
 RUN git clone --branch master https://github.com/alanxz/rabbitmq-c.git /tmp/rabbitmq-c \
    && cd /tmp/rabbitmq-c \
@@ -111,9 +115,6 @@ RUN git clone --branch master https://github.com/alanxz/rabbitmq-c.git /tmp/rabb
    && make install \
    && rm -rf /tmp/rabbitmq-c
 RUN pecl install amqp
-
-RUN pecl install imagick
-RUN pecl install memcached
 
 # Install XMLRPC extension
 RUN curl -sSL https://pecl.php.net/get/xmlrpc -o xmlrpc.tgz \

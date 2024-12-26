@@ -1,15 +1,7 @@
 # Start with the openappsec agent image
 FROM randyproxz/php8.1-fpm:openappsec
 
-# Remove any conflicting packages if already installed
-RUN apk del gd-dev gdb python3 || true
-
-# Install necessary packages
-RUN apk update
-RUN apk add --no-cache supervisor
-
 ## Create dirs
-RUN mkdir -p /etc/supervisor/conf.d 
 RUN mkdir -p /var/log/supervisor && chmod 755 /var/log/supervisor
 RUN mkdir -p /var/log/nginx && chmod 755 /var/log/nginx
 RUN mkdir -p /var/log/php && chmod 755 /var/log/php

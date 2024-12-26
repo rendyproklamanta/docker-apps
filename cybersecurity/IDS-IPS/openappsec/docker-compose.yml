@@ -5,8 +5,8 @@ services:
     container_name: openappsec
     build:
       context: .
-      # dockerfile: Dockerfile.agent.default
-      dockerfile: Dockerfile.agent.php
+      dockerfile: Dockerfile.agent.default
+      #dockerfile: Dockerfile.agent.php
     volumes:
       - ./source:/usr/share/nginx/html
     entrypoint: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n
