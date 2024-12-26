@@ -8,9 +8,7 @@ services:
       dockerfile: Dockerfile.agent.test
     volumes:
       - ./source:/usr/share/nginx/html
-      - ./conf/default.conf:/etc/nginx/conf.d/default.conf
-    command: /bin/sh -c "/usr/sbin/php-fpm7 -F & nginx & /cp-nano-agent --token cp-29833988-148a-408f-955b-f9a0aed039c44934ca4e-b3dc-4c91-9a6c-356364ff5631"
-    # entrypoint: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n
+    entrypoint: /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf -n
     ports:
       - 80:80
     networks:

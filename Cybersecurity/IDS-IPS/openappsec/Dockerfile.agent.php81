@@ -3,9 +3,7 @@ FROM randyproxz/openappsec-agent:nginx
 
 # Add the custom repository for PHP
 RUN rm -rf /etc/apk/repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
-   echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
-# RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 # Update package lists
 RUN apk update
@@ -53,50 +51,50 @@ RUN apk add --no-cache \
    perl-dev \
    gd-dev
 
-# Update the apk index and install php8 and php8-fpm
+# Update the apk index and install php81 and php81-fpm
 RUN apk add --no-cache \
-   php7 \
-   php7-fpm \
-   php7-opcache \
-   php7-mysqli \
-   php7-pdo \
-   php7-pdo_mysql \
-   php7-pgsql \
-   php7-mongodb \
-   php7-mbstring \
-   php7-zlib \
-   php7-curl \
-   php7-json \
-   php7-xml \
-   php7-ctype \
-   php7-bcmath \
-   php7-session \
-   php7-soap \
-   php7-gd \
-   php7-intl \
-   php7-gettext \
-   php7-xmlrpc \
-   php7-pcntl \
-   php7-pear \
-   php7-mcrypt \
-   php7-redis \
-   php7-amqp \
-   php7-sodium \
-   php7-sockets \
-   php7-bz2 \
-   php7-openssl \
-   php7-fileinfo \
-   php7-xdebug \
-   php7-ftp \
-   php7-xmlreader \
-   php7-ldap \
-   php7-imagick \
-   php7-memcached \
-   php7-gmp \
-   php7-tokenizer \
-   php7-pdo_sqlite \
-   php7-imap \
-   php7-memcached
+   php81 \
+   php81-fpm \
+   php81-opcache \
+   php81-mysqli \
+   php81-pdo \
+   php81-pdo_mysql \
+   php81-pgsql \
+   php81-mongodb \
+   php81-mbstring \
+   php81-zlib \
+   php81-curl \
+   php81-json \
+   php81-xml \
+   php81-ctype \
+   php81-bcmath \
+   php81-session \
+   php81-soap \
+   php81-gd \
+   php81-intl \
+   php81-gettext \
+   php81-xmlrpc \
+   php81-pcntl \
+   php81-pear \
+   php81-mcrypt \
+   php81-redis \
+   php81-amqp \
+   php81-sodium \
+   php81-sockets \
+   php81-bz2 \
+   php81-openssl \
+   php81-fileinfo \
+   php81-xdebug \
+   php81-ftp \
+   php81-xmlreader \
+   php81-ldap \
+   php81-imagick \
+   php81-memcached \
+   php81-gmp \
+   php81-tokenizer \
+   php81-pdo_sqlite \
+   php81-imap \
+   php81-memcached
 
 # Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
@@ -106,11 +104,11 @@ RUN getent group www-data || addgroup -S www-data && \
 RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
 
 # Copy www.conf to container
-COPY ./conf/www.conf /etc/php7/php-fpm.d/www.conf
+COPY ./conf/www.conf /etc/php81/php-fpm.d/www.conf
 
 # Command to run PHP-FPM
-CMD ["php-fpm7", "-F"]
+CMD ["php-fpm81", "-F"]
 
 ## BUILDER ------------------------
-## docker build -t randyproxz/php7.4-fpm:openappsec -f Dockerfile.agent.php74 .
+## docker build -t randyproxz/php8.1-fpm:openappsec-nginx -f Dockerfile.agent.php81 .
 ## --------------------------------
