@@ -5,7 +5,6 @@ FROM randyproxz/openappsec-agent:nginx
 RUN rm -rf /etc/apk/repositories
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
    echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
-# RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 # Update package lists
 RUN apk update
@@ -56,6 +55,9 @@ RUN apk add --no-cache \
 # Update the apk index and install php8 and php8-fpm
 RUN apk add --no-cache \
    php7 \
+   php7-pear \
+   php7-cli \
+   php7-dev \
    php7-fpm \
    php7-opcache \
    php7-mysqli \
@@ -77,7 +79,6 @@ RUN apk add --no-cache \
    php7-gettext \
    php7-xmlrpc \
    php7-pcntl \
-   php7-pear \
    php7-mcrypt \
    php7-redis \
    php7-amqp \
@@ -102,14 +103,19 @@ RUN apk add --no-cache \
 RUN getent group www-data || addgroup -S www-data && \
    getent passwd www-data || adduser -S www-data -G www-data
 
-# Ensure www-data user and group exist\
+# Ensure www-data user and group exist
 RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+RUN mkdir -p /var/log/php
 
 # Copy www.conf to container
 COPY ./conf/www.conf /etc/php7/php-fpm.d/www.conf
 
+# Create a symbolic link so php-fpm points to php-fpmX
+RUN ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm
+RUN ln -s /usr/sbin/php-fpm7 /usr/local/bin/php
+
 # Command to run PHP-FPM
-CMD ["php-fpm7", "-F"]
+CMD ["php-fpm", "-F"]
 
 ## BUILDER ------------------------
 ## docker build -t randyproxz/php7.4-fpm:openappsec -f Dockerfile.agent.php74 .

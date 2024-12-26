@@ -1,5 +1,5 @@
 # Start with the openappsec agent image
-FROM randyproxz/php7.4-fpm:openappsec
+FROM randyproxz/php8.1-fpm:openappsec
 
 # Remove any conflicting packages if already installed
 RUN apk del gd-dev gdb python3 || true
@@ -19,7 +19,8 @@ RUN mkdir -p /var/cache/nginx/fastcgi && chmod 755 /var/cache/nginx/fastcgi
 COPY ./conf/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/default.conf /etc/nginx/conf.d/default.conf
 COPY ./conf/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ./conf/php.ini /etc/php7/conf.d/php.ini
+# COPY ./conf/php.ini /etc/php7/conf.d/php.ini
+COPY ./conf/php.ini /etc/php81/conf.d/php.ini
 
 ## Load modules
 RUN sed -i '1s|^|load_module /usr/lib/nginx/modules/libngx_module.so;\n|' /etc/nginx/nginx.conf

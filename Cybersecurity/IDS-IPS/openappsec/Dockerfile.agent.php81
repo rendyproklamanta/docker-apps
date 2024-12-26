@@ -2,7 +2,6 @@
 FROM randyproxz/openappsec-agent:nginx
 
 # Add the custom repository for PHP
-RUN rm -rf /etc/apk/repositories
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 
 # Update package lists
@@ -39,21 +38,32 @@ RUN apk add --no-cache \
    dcron \
    gcc \
    g++ \
-   make \
    autoconf \
    libc-dev \
    pkgconfig \
    cmake \
+   make \
+   libtool \
    pcre-dev \
    geoip-dev \
    linux-headers \
    python3 \
    perl-dev \
-   gd-dev
+   gd-dev \
+   musl-dev \
+   imagemagick-dev \
+   imagemagick \
+   ghostscript \
+   libmcrypt-dev \
+   libmcrypt
 
 # Update the apk index and install php81 and php81-fpm
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
+   $PHPIZE_DEPS \
    php81 \
+   php81-pear \
+   php81-cli \
+   php81-dev \
    php81-fpm \
    php81-opcache \
    php81-mysqli \
@@ -73,12 +83,8 @@ RUN apk add --no-cache \
    php81-gd \
    php81-intl \
    php81-gettext \
-   php81-xmlrpc \
    php81-pcntl \
-   php81-pear \
-   php81-mcrypt \
    php81-redis \
-   php81-amqp \
    php81-sodium \
    php81-sockets \
    php81-bz2 \
@@ -88,27 +94,57 @@ RUN apk add --no-cache \
    php81-ftp \
    php81-xmlreader \
    php81-ldap \
-   php81-imagick \
-   php81-memcached \
    php81-gmp \
    php81-tokenizer \
    php81-pdo_sqlite \
-   php81-imap \
-   php81-memcached
+   php81-imap
+
+RUN ln -s /usr/bin/phpize81 /usr/bin/phpize
+RUN ln -s /usr/bin/pecl81 /usr/bin/pecl
+RUN ln -s /usr/bin/php-config81 /usr/bin/php-config
+
+# Install AMQP extension
+RUN git clone --branch master https://github.com/alanxz/rabbitmq-c.git /tmp/rabbitmq-c \
+   && cd /tmp/rabbitmq-c \
+   && cmake . \
+   && make \
+   && make install \
+   && rm -rf /tmp/rabbitmq-c
+RUN pecl install amqp
+
+RUN pecl install imagick
+RUN pecl install memcached
+
+# Install XMLRPC extension
+RUN curl -sSL https://pecl.php.net/get/xmlrpc -o xmlrpc.tgz \
+   && tar -xvzf xmlrpc.tgz && rm xmlrpc.tgz \
+   && cd xmlrpc-* && phpize && ./configure --with-php-config=/usr/bin/php-config && make && make install \
+   && echo "extension=xmlrpc.so" > /etc/php81/conf.d/xmlrpc.ini
+
+# Install mcrypt using PECL if it's not available in the Alpine package
+RUN curl -sSL https://pecl.php.net/get/mcrypt -o mcrypt.tgz \
+   && tar -xvzf mcrypt.tgz && rm mcrypt.tgz \
+   && cd mcrypt-* && phpize && ./configure --with-php-config=/usr/bin/php-config && make && make install \
+   && echo "extension=mcrypt.so" > /etc/php81/conf.d/mcrypt.ini
 
 # Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
    getent passwd www-data || adduser -S www-data -G www-data
 
-# Ensure www-data user and group exist\
+# Ensure www-data user and group exist
 RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+RUN mkdir -p /var/log/php
 
 # Copy www.conf to container
 COPY ./conf/www.conf /etc/php81/php-fpm.d/www.conf
 
+# Create a symbolic link so php-fpm points to php-fpmX
+RUN ln -s /usr/sbin/php-fpm81 /usr/sbin/php-fpm
+RUN ln -s /usr/sbin/php-fpm81 /usr/local/bin/php
+
 # Command to run PHP-FPM
-CMD ["php-fpm81", "-F"]
+CMD ["php-fpm", "-F"]
 
 ## BUILDER ------------------------
-## docker build -t randyproxz/php8.1-fpm:openappsec-nginx -f Dockerfile.agent.php81 .
+## docker build -t randyproxz/php8.1-fpm:openappsec -f Dockerfile.agent.php81 .
 ## --------------------------------
