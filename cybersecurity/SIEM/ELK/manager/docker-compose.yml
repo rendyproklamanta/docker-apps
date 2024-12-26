@@ -1,0 +1,71 @@
+version: "3.8"
+
+services:
+  # Elasticsearch service
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.0.0
+    hostname: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ELASTIC_PASSWORD=changeme # Set the default 'elastic' user password
+    volumes:
+      - ./elastic_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    deploy:
+      replicas: 1
+    networks:
+      - elk-network
+
+  # Kibana service
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.0.0
+    hostname: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme # Password for the 'elastic' user
+    ports:
+      - "5601:5601"
+    deploy:
+      replicas: 1
+    networks:
+      - elk-network
+
+  # Logstash service
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.0.0
+    hostname: logstash
+    ports:
+      - "5044:5044"
+      - "9600:9600"  # Logstash API
+    volumes:
+      - ./logstash:/usr/share/logstash/pipeline
+    deploy:
+      replicas: 1
+    networks:
+      - elk-network
+
+  # APM-server service
+  apm-server:
+    image: docker.elastic.co/apm/apm-server:8.8.0
+    hostname: apm-server
+    deploy:
+      replicas: 1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200 # Elasticsearch connection
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=changeme # Password for the 'elastic' user
+      - APM_SERVER_SECRET_TOKEN=your_apm_secret_token # Optional, configure a secret token for security
+      - APM_SERVER_KIBANA_URL=http://kibana:5601 # Optional, configure Kibana URL for APM integration
+    ports:
+      - "8200:8200" # Expose APM server HTTP endpoint
+    volumes:
+      - ./apm_data:/usr/share/apm-server/data # Persist data for APM server (optional
+    networks:
+      - elk-network
+
+networks:
+  elk-network:
+    external: true
