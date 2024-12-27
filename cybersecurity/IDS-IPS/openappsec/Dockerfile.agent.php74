@@ -97,7 +97,45 @@ RUN apk add --no-cache \
    php7-tokenizer \
    php7-pdo_sqlite \
    php7-imap \
-   php7-memcached
+   php7-phar \
+   php7-iconv \
+   php7-simplexml \
+   php7-zip \
+   php7-common \
+   php7-dom \
+   php7-cgi \
+   php7-xsl \
+   php7-enchant \
+   php7-exif \
+   php7-dba \
+   php7-dbg \
+   php7-doc \
+   php7-embed \
+   php7-brotli \
+   php7-litespeed \
+   php7-odbc \
+   php7-pdo_dblib \
+   php7-pdo_odbc \
+   php7-phalcon \
+   php7-pecl-apcu \
+   php7-pecl-xhprof \
+   php7-pecl-xhprof-assets \
+   php7-pecl-uuid \
+   php7-pecl-protobuf \
+   php7-pecl-xdebug \
+   php7-pecl-oauth \
+   php7-pecl-ssh2 \
+   php7-pecl-imagick-dev \
+   php7-pecl-vips \
+   php7-pecl-ast \
+   php7-pecl-event \
+   php7-pecl-timezonedb \
+   php7-pecl-yaml \
+   php7-pecl-zmq \
+   php7-pecl-couchbase \
+   php7-pecl-gmagick \
+   php7-pecl-igbinary \
+   php7-pecl-lzf
 
 # Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
@@ -112,7 +150,10 @@ COPY ./conf/php/www.conf /etc/php7/php-fpm.d/www.conf
 
 # Create a symbolic link so php-fpm points to php-fpmX
 RUN ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm
-RUN ln -s /usr/sbin/php-fpm7 /usr/local/bin/php
+
+# Download and install Composer
+RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer
+RUN chmod +x /usr/local/bin/composer
 
 # Command to run PHP-FPM
 CMD ["php-fpm", "-F"]

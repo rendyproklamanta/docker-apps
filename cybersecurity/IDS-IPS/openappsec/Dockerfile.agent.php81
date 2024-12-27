@@ -58,8 +58,7 @@ RUN apk add --no-cache \
    libmcrypt
 
 # Update the apk index and install php81 and php81-fpm
-RUN apk update && apk add --no-cache \
-   $PHPIZE_DEPS \
+RUN apk add --no-cache \
    php81 \
    php81-pear \
    php81-cli \
@@ -97,36 +96,51 @@ RUN apk update && apk add --no-cache \
    php81-gmp \
    php81-tokenizer \
    php81-pdo_sqlite \
-   php81-imap
+   php81-imap \
+   php81-phar \
+   php81-iconv \
+   php81-simplexml \
+   php81-zip \
+   php81-common \
+   php81-dom \
+   php81-cgi \
+   php81-xsl \
+   php81-enchant \
+   php81-exif \
+   php81-dba \
+   php81-doc \
+   php81-embed \
+   php81-brotli \
+   php81-litespeed \
+   php81-odbc \
+   php81-pdo_dblib \
+   php81-pdo_odbc \
+   php81-pecl-apcu \
+   php81-pecl-xhprof \
+   php81-pecl-xhprof-assets \
+   php81-pecl-uuid \
+   php81-pecl-protobuf \
+   php81-pecl-xdebug \
+   php81-pecl-oauth \
+   php81-pecl-ssh2 \
+   php81-pecl-imagick-dev \
+   php81-pecl-vips \
+   php81-pecl-ast \
+   php81-pecl-event \
+   php81-pecl-timezonedb \
+   php81-pecl-yaml \
+   php81-pecl-couchbase \
+   php81-pecl-igbinary \
+   php81-pecl-lzf \
+   php81-pecl-imagick \
+   php81-pecl-memcached \
+   php81-pecl-amqp \
+   php81-pecl-xmlrpc \
+   php81-pecl-mcrypt
 
 RUN ln -s /usr/bin/phpize81 /usr/bin/phpize
 RUN ln -s /usr/bin/pecl81 /usr/bin/pecl
 RUN ln -s /usr/bin/php-config81 /usr/bin/php-config
-
-# Install extensions
-RUN pecl install imagick
-RUN pecl install memcached
-
-# Install AMQP extension
-RUN git clone --branch master https://github.com/alanxz/rabbitmq-c.git /tmp/rabbitmq-c \
-   && cd /tmp/rabbitmq-c \
-   && cmake . \
-   && make \
-   && make install \
-   && rm -rf /tmp/rabbitmq-c
-RUN pecl install amqp
-
-# Install XMLRPC extension
-RUN curl -sSL https://pecl.php.net/get/xmlrpc -o xmlrpc.tgz \
-   && tar -xvzf xmlrpc.tgz && rm xmlrpc.tgz \
-   && cd xmlrpc-* && phpize && ./configure --with-php-config=/usr/bin/php-config && make && make install \
-   && echo "extension=xmlrpc.so" > /etc/php81/conf.d/xmlrpc.ini
-
-# Install mcrypt using PECL if it's not available in the Alpine package
-RUN curl -sSL https://pecl.php.net/get/mcrypt -o mcrypt.tgz \
-   && tar -xvzf mcrypt.tgz && rm mcrypt.tgz \
-   && cd mcrypt-* && phpize && ./configure --with-php-config=/usr/bin/php-config && make && make install \
-   && echo "extension=mcrypt.so" > /etc/php81/conf.d/mcrypt.ini
 
 # Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
@@ -141,7 +155,10 @@ COPY ./conf/php/www.conf /etc/php81/php-fpm.d/www.conf
 
 # Create a symbolic link so php-fpm points to php-fpmX
 RUN ln -s /usr/sbin/php-fpm81 /usr/sbin/php-fpm
-RUN ln -s /usr/sbin/php-fpm81 /usr/local/bin/php
+RUN ln -s /usr/bin/php81 /usr/bin/php
+
+# Download and install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Command to run PHP-FPM
 CMD ["php-fpm", "-F"]
