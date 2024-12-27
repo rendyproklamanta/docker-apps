@@ -41,8 +41,10 @@ RUN mkdir -p /var/log/nginx
 # Download and extract Nginx 1.22.1 source
 RUN curl -O http://nginx.org/download/nginx-1.22.1.tar.gz && \
    tar -xvzf nginx-1.22.1.tar.gz && \
+   git clone https://github.com/openresty/headers-more-nginx-module.git && \
    cd nginx-1.22.1 && \
    ./configure \
+   --add-module=../headers-more-nginx-module \
    --with-http_ssl_module \
    --with-http_realip_module \
    --with-http_v2_module \
