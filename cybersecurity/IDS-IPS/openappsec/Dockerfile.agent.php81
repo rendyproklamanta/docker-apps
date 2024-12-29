@@ -74,7 +74,6 @@ RUN apk add --no-cache \
    php81-zlib \
    php81-curl \
    php81-json \
-   php81-xml \
    php81-ctype \
    php81-bcmath \
    php81-session \
@@ -91,7 +90,6 @@ RUN apk add --no-cache \
    php81-fileinfo \
    php81-xdebug \
    php81-ftp \
-   php81-xmlreader \
    php81-ldap \
    php81-gmp \
    php81-tokenizer \
@@ -99,7 +97,6 @@ RUN apk add --no-cache \
    php81-imap \
    php81-phar \
    php81-iconv \
-   php81-simplexml \
    php81-zip \
    php81-common \
    php81-dom \
@@ -113,6 +110,10 @@ RUN apk add --no-cache \
    php81-brotli \
    php81-litespeed \
    php81-odbc \
+   php81-xml \
+   php81-xmlreader \
+   php81-xmlwriter \
+   php81-simplexml \
    php81-pdo_dblib \
    php81-pdo_odbc \
    php81-pecl-apcu \
