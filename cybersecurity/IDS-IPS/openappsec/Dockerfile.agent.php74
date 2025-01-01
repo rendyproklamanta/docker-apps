@@ -134,7 +134,6 @@ RUN apk add --no-cache \
    php7-pecl-yaml \
    php7-pecl-zmq \
    php7-pecl-couchbase \
-   php7-pecl-gmagick \
    php7-pecl-igbinary \
    php7-pecl-lzf
 
