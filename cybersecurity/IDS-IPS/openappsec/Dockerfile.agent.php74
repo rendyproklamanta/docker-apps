@@ -8,6 +8,7 @@ RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositori
 
 # Update package lists
 RUN apk update
+RUN apk add --no-cache --upgrade openssl
 
 # Remove any conflicting packages if already installed
 RUN apk del boost icu || true
@@ -30,6 +31,7 @@ RUN apk add --no-cache \
    libxml2-dev \
    curl-dev \
    openssl-dev \
+   libssl1.1 \
    libsodium-dev \
    oniguruma-dev \
    icu-libs \
