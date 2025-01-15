@@ -1,20 +1,25 @@
 # Start with the openappsec agent image
 FROM randyproxz/openappsec-agent:nginx
 
-# Add the custom repository for PHP
-RUN rm -rf /etc/apk/repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
-   echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
-
 # Update package lists
 RUN apk update
-RUN apk add --no-cache --upgrade openssl
 
 # Remove any conflicting packages if already installed
 RUN apk del boost icu || true
 
+# Install necessary tools and dependencies
 RUN apk add --no-cache \
    build-base \
+   libtool \
+   freetds-dev \
+   libcouchbase-dev \
+   imap-dev \
+   libevent-dev \
+   libpq-dev \
+   libldap \
+   openldap-dev \
+   cyrus-sasl-dev \
+   sqlite-dev \
    wget \
    libpng \
    libpng-dev \
@@ -30,8 +35,7 @@ RUN apk add --no-cache \
    libxml2 \
    libxml2-dev \
    curl-dev \
-   openssl-dev \
-   libssl1.1 \
+   libssl3 \
    libsodium-dev \
    oniguruma-dev \
    icu-libs \
@@ -48,96 +52,92 @@ RUN apk add --no-cache \
    pkgconfig \
    cmake \
    pcre-dev \
+   pcre2-dev \
    geoip-dev \
    linux-headers \
    python3 \
    perl-dev \
-   gd-dev
+   gd-dev \
+   enchant2 \
+   gmp-dev \
+   imap-dev \
+   krb5-dev \
+   krb5-libs \
+   && rm -rf /var/cache/apk/*
 
-# Update the apk index and install php8 and php8-fpm
-RUN apk add --no-cache \
-   php7 \
-   php7-pear \
-   php7-cli \
-   php7-dev \
-   php7-fpm \
-   php7-opcache \
-   php7-mysqli \
-   php7-pdo \
-   php7-pdo_mysql \
-   php7-pgsql \
-   php7-mongodb \
-   php7-mbstring \
-   php7-zlib \
-   php7-curl \
-   php7-json \
-   php7-ctype \
-   php7-bcmath \
-   php7-session \
-   php7-soap \
-   php7-gd \
-   php7-intl \
-   php7-gettext \
-   php7-pcntl \
-   php7-mcrypt \
-   php7-redis \
-   php7-amqp \
-   php7-sodium \
-   php7-sockets \
-   php7-bz2 \
-   php7-openssl \
-   php7-fileinfo \
-   php7-xdebug \
-   php7-ftp \
-   php7-ldap \
-   php7-imagick \
-   php7-memcached \
-   php7-gmp \
-   php7-tokenizer \
-   php7-pdo_sqlite \
-   php7-imap \
-   php7-phar \
-   php7-iconv \
-   php7-zip \
-   php7-common \
-   php7-dom \
-   php7-cgi \
-   php7-xsl \
-   php7-enchant \
-   php7-exif \
-   php7-dba \
-   php7-dbg \
-   php7-doc \
-   php7-embed \
-   php7-brotli \
-   php7-litespeed \
-   php7-odbc \
-   php7-xml \
-   php7-xmlrpc \
-   php7-xmlreader \
-   php7-xmlwriter \
-   php7-simplexml \
-   php7-pdo_dblib \
-   php7-pdo_odbc \
-   php7-phalcon \
-   php7-pecl-apcu \
-   php7-pecl-xhprof \
-   php7-pecl-xhprof-assets \
-   php7-pecl-uuid \
-   php7-pecl-protobuf \
-   php7-pecl-xdebug \
-   php7-pecl-oauth \
-   php7-pecl-ssh2 \
-   php7-pecl-imagick-dev \
-   php7-pecl-vips \
-   php7-pecl-ast \
-   php7-pecl-event \
-   php7-pecl-timezonedb \
-   php7-pecl-yaml \
-   php7-pecl-zmq \
-   php7-pecl-couchbase \
-   php7-pecl-igbinary \
-   php7-pecl-lzf
+# Set working directory
+WORKDIR /usr/src
+
+# Download and build OpenSSL 1.1.1s
+RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz \
+   && tar -xvzf openssl-1.1.1s.tar.gz \
+   && cd openssl-1.1.1s \
+   && ./config --prefix=/opt/build --openssldir=/opt/build shared -fPIC \
+   && make -j$(nproc) \
+   && make install
+
+# Set environment variables to use the custom OpenSSL
+ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
+ENV OPENSSL_CONF=/opt/build/ssl/openssl.cnf
+
+# Set working directory for PHP
+WORKDIR /usr/src
+
+# Install PHP from source
+RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33.tar.gz \
+   && tar -xvzf php-7.4.33.tar.gz \
+   && cd php-7.4.33 \
+   && ./buildconf --force \
+   && ./configure \
+      --prefix=/usr/local/php \
+      --with-config-file-path=/usr/local/php \
+      --with-libdir=/usr/lib \
+      --with-openssl=/opt/build \
+      --enable-bcmath \
+      --enable-fpm \
+      --enable-soap \
+      --enable-sockets \
+      --enable-sysvsem \
+      --enable-sysvshm \
+      --enable-opcache \
+      --enable-pcntl \
+      --enable-soap \
+      --enable-brotli \
+      --enable-cli \
+      --enable-common \
+      --enable-intl \
+      --enable-apcu \
+      --enable-phalcon \
+      --enable-doc \
+      --with-litespeed \
+      --with-curl \
+      --with-zlib \
+      --with-mysqli \
+      --with-bz2 \
+      --with-kerberos \
+      --with-xsl \
+      --with-icu-dir=/usr/include/icu \
+      --with-memcached \
+      --with-jpeg-dir=/usr/include \
+      --with-png-dir=/usr/include \
+      --with-webp-dir=/usr/include \
+      --with-freetype-dir=/usr/include \
+      --with-sodium \
+      --with-pdo-mysql \
+      --with-pdo-pgsql \
+      --with-pgsql \
+      --with-mongodb \
+      --with-redis \
+      --with-xsl \
+      --with-bz2 \
+      --with-sodium \
+      --with-imagick \
+      --with-mcrypt \
+      --with-zip \
+   && make \
+   && make install \
+   && cd .. \
+   && rm -rf php-7.4.33 php-7.4.33.tar.gz
 
 # Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
@@ -148,17 +148,21 @@ RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
 RUN mkdir -p /var/log/php
 
 # Copy www.conf to container
-COPY ./conf/php/www.conf /etc/php7/php-fpm.d/www.conf
+COPY ./conf/php/www.conf /usr/local/php/etc/php-fpm.d/www.conf
+RUN cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
 
-# Create a symbolic link so php-fpm points to php-fpmX
-RUN ln -s /usr/sbin/php-fpm7 /usr/sbin/php-fpm
+# Create a symbolic link
+RUN ln -s /usr/local/php/bin/php /usr/bin/php
+RUN ln -s /usr/local/php/bin/phpize /usr/bin/phpize
+RUN ln -s /usr/local/php/bin/php-config /usr/bin/php-config
+RUN ln -s /usr/local/php/sbin/php-fpm /usr/local/bin/php-fpm
 
 # Download and install Composer
 RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer
 RUN chmod +x /usr/local/bin/composer
 
 # Command to run PHP-FPM
-CMD ["php-fpm", "-F"]
+CMD ["/usr/local/php/sbin/php-fpm", "-F"]
 
 ## BUILDER ------------------------
 ## docker build -t randyproxz/php7.4-fpm:openappsec -f Dockerfile.agent.php74 .
