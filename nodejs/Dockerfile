@@ -24,8 +24,8 @@ COPY ./conf/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY ./conf/production/default.conf /etc/nginx/conf.d/default.conf 
 
 # Install depedencies
-RUN npm install -g nodemon
-RUN npm install
+RUN npm install -g nodemon yarn
+RUN yarn
 
 EXPOSE 80
 

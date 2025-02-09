@@ -13,6 +13,7 @@ services:
       - TZ=Asia/Jakarta
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+    command: yarn dev
     ports:
       - 3000:3000
     networks:
