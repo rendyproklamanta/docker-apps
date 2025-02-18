@@ -1,174 +1,144 @@
 # Start with the openappsec agent image
 FROM randyproxz/openappsec-agent:nginx
 
-# Add the custom repository for PHP
-RUN rm -rf /etc/apk/repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
-   echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
+USER root
 
-# Update package lists
-RUN apk update
+# Set the Alpine repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
 
 # Remove any conflicting packages if already installed
 RUN apk del boost icu || true
 
-# Install necessary tools and dependencies
-RUN apk add --no-cache \
-   build-base \
-   libtool \
-   freetds-dev \
-   libcouchbase-dev \
-   imap-dev \
-   libevent-dev \
-   libpq-dev \
-   libldap \
-   openldap-dev \
-   cyrus-sasl-dev \
-   sqlite-dev \
-   wget \
-   libpng \
-   libpng-dev \
-   libjpeg-turbo \
-   libjpeg-turbo-dev \
-   freetype \
-   freetype-dev \
-   libzip \
-   libzip-dev \
-   zlib \
-   zlib-dev \
-   libxslt-dev \
-   libxml2 \
-   libxml2-dev \
-   curl-dev \
-   libssl3 \
-   libsodium-dev \
-   oniguruma-dev \
-   icu-libs \
-   icu-dev \
-   gettext-dev \
-   bzip2-dev \
-   libmemcached-dev \
-   dcron \
-   gcc \
-   g++ \
-   make \
-   autoconf \
-   libc-dev \
-   pkgconfig \
-   cmake \
-   pcre-dev \
-   pcre2-dev \
-   geoip-dev \
-   linux-headers \
-   python3 \
-   perl-dev \
-   gd-dev \
-   enchant2 \
-   gmp-dev \
-   imap-dev \
-   krb5-dev \
-   krb5-libs \
-   && rm -rf /var/cache/apk/*
+# Update and install dependencies
+RUN apk update && apk add --no-cache \
+    build-base \
+    libtool \
+    freetds-dev \
+    libcouchbase-dev \
+    imap-dev \
+    libevent-dev \
+    libpq-dev \
+    openldap-dev \
+    cyrus-sasl-dev \
+    sqlite-dev \
+    wget \
+    libpng \
+    libpng-dev \
+    libjpeg-turbo \
+    libjpeg-turbo-dev \
+    freetype \
+    freetype-dev \
+    libzip-dev \
+    zlib-dev \
+    libxslt-dev \
+    libxml2-dev \
+    curl-dev \
+    libsodium-dev \
+    oniguruma-dev \
+    icu-dev \
+    gettext-dev \
+    bzip2-dev \
+    libmemcached-dev \
+    gcc \
+    g++ \
+    make \
+    autoconf \
+    pkgconfig \
+    cmake \
+    pcre-dev \
+    pcre2-dev \
+    linux-headers \
+    python3 \
+    perl-dev \
+    gd-dev \
+    enchant2 \
+    gmp-dev \
+    krb5-dev \
+    krb5-libs
 
-# Set working directory
+# Install OpenSSL 1.1.1s
 WORKDIR /usr/src
+RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz && \
+    tar -xvzf openssl-1.1.1s.tar.gz && \
+    cd openssl-1.1.1s && \
+    ./config --prefix=/opt/build --openssldir=/opt/build shared -fPIC && \
+    make -j$(nproc) && \
+    make install
 
-# Download and build OpenSSL 1.1.1s
-RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz \
-   && tar -xvzf openssl-1.1.1s.tar.gz \
-   && cd openssl-1.1.1s \
-   && ./config --prefix=/opt/build --openssldir=/opt/build shared -fPIC \
-   && make -j$(nproc) \
-   && make install
-
-# Set environment variables to use the custom OpenSSL
+# Set OpenSSL environment variables
 ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
 ENV OPENSSL_CONF=/opt/build/ssl/openssl.cnf
 
-# Set working directory for PHP
-WORKDIR /usr/src
+# Install specific version of libxml2 compatible with PHP 7.4
+RUN wget http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
+    tar -xzf libxml2-2.9.12.tar.gz && \
+    cd libxml2-2.9.12 && \
+    ./configure --prefix=/usr --without-python && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && rm -rf libxml2-2.9.12 libxml2-2.9.12.tar.gz
 
-# Install PHP from source
-RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33.tar.gz \
-   && tar -xvzf php-7.4.33.tar.gz \
-   && cd php-7.4.33 \
-   && ./buildconf --force \
-   && ./configure \
-      --prefix=/usr/local/php \
-      --with-config-file-path=/usr/local/php \
-      --with-libdir=/usr/lib \
-      --with-openssl=/opt/build \
-      --enable-bcmath \
-      --enable-fpm \
-      --enable-soap \
-      --enable-sockets \
-      --enable-sysvsem \
-      --enable-sysvshm \
-      --enable-opcache \
-      --enable-pcntl \
-      --enable-soap \
-      --enable-brotli \
-      --enable-cli \
-      --enable-common \
-      --enable-intl \
-      --enable-apcu \
-      --enable-phalcon \
-      --enable-doc \
-      --with-litespeed \
-      --with-curl \
-      --with-zlib \
-      --with-mysqli \
-      --with-bz2 \
-      --with-kerberos \
-      --with-xsl \
-      --with-icu-dir=/usr/include/icu \
-      --with-memcached \
-      --with-jpeg-dir=/usr/include \
-      --with-png-dir=/usr/include \
-      --with-webp-dir=/usr/include \
-      --with-freetype-dir=/usr/include \
-      --with-sodium \
-      --with-pdo-mysql \
-      --with-pdo-pgsql \
-      --with-pgsql \
-      --with-mongodb \
-      --with-redis \
-      --with-xsl \
-      --with-bz2 \
-      --with-sodium \
-      --with-imagick \
-      --with-mcrypt \
-      --with-zip \
-   && make \
-   && make install \
-   && cd .. \
-   && rm -rf php-7.4.33 php-7.4.33.tar.gz
+# Install PHP 7.4.33 from source
+RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33.tar.gz && \
+    tar -xvzf php-7.4.33.tar.gz && \
+    cd php-7.4.33 && \
+    ./buildconf --force && \
+    CFLAGS="-Wno-deprecated-declarations -Wno-incompatible-pointer-types" ./configure \
+        --prefix=/usr/local/php \
+        --with-config-file-path=/usr/local/php \
+        --with-libdir=/usr/lib \
+        --with-openssl=/opt/build \
+        --enable-fpm \
+        --enable-soap \
+        --enable-sockets \
+        --enable-sysvsem \
+        --enable-sysvshm \
+        --enable-opcache \
+        --enable-pcntl \
+        --enable-cli \
+        --enable-intl \
+        --with-curl \
+        --with-zlib \
+        --with-mysqli \
+        --with-bz2 \
+        --with-xsl \
+        --with-icu-dir=/usr/include/icu \
+        --with-pdo-mysql \
+        --with-pdo-pgsql \
+        --with-pgsql \
+        --with-redis \
+        --with-bz2 \
+        --with-sodium \
+        --with-imagick \
+        --with-zip \
+        --enable-gd \
+        --with-jpeg \
+        --with-freetype \
+    && make -j$(nproc) && make install
 
-# Ensure www-data user and group exist, if not already created
+# Ensure www-data group and user exist, only add if missing
 RUN getent group www-data || addgroup -S www-data && \
-   getent passwd www-data || adduser -S www-data -G www-data
+    getent passwd www-data || adduser -S www-data -G www-data
 
-# Ensure www-data user and group exist
-RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
-RUN mkdir -p /var/log/php
-
-# Copy www.conf to container
+# Set up PHP-FPM configuration
+RUN mkdir -p /run/php /var/log/php
 COPY ./conf/php/www.conf /usr/local/php/etc/php-fpm.d/www.conf
 RUN cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
 
-# Create a symbolic link
-RUN ln -s /usr/local/php/bin/php /usr/bin/php
-RUN ln -s /usr/local/php/bin/phpize /usr/bin/phpize
-RUN ln -s /usr/local/php/bin/php-config /usr/bin/php-config
-RUN ln -s /usr/local/php/sbin/php-fpm /usr/local/bin/php-fpm
+# Symlink PHP binaries
+RUN ln -s /usr/local/php/bin/php /usr/bin/php && \
+    ln -s /usr/local/php/bin/phpize /usr/bin/phpize && \
+    ln -s /usr/local/php/bin/php-config /usr/bin/php-config && \
+    ln -s /usr/local/php/sbin/php-fpm /usr/local/bin/php-fpm
 
-# Download and install Composer
-RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer
-RUN chmod +x /usr/local/bin/composer
+# Install Composer
+RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer && chmod +x /usr/local/bin/composer
 
 # Command to run PHP-FPM
 CMD ["/usr/local/php/sbin/php-fpm", "-F"]
 
-## BUILDER ------------------------
+## BUILD and PUSH -----------------
 ## docker build -t randyproxz/php7.4-fpm:openappsec -f Dockerfile.agent.php74 .
+## docker push randyproxz/php7.4-fpm:openappsec
 ## --------------------------------

@@ -1,6 +1,8 @@
 # Start with the openappsec agent image
 FROM ghcr.io/openappsec/agent:latest
 
+USER root
+
 # Remove any conflicting packages if already installed
 RUN apk del gd-dev || true
 
@@ -107,6 +109,7 @@ COPY ./advanced-model/open-appsec-advanced-model.tgz /advanced-model/open-appsec
 # RUN sed -i '1s|^|load_module /usr/lib/nginx/modules/libngx_module.so;\n|' /etc/nginx/nginx.conf
 ## ------------------------
 
-## BUILDER ----------------
+## BUILD and PUSH ---------
 ## docker build -t randyproxz/openappsec-agent:nginx -f Dockerfile.agent .
+## docker push randyproxz/openappsec-agent:nginx
 ## ------------------------
