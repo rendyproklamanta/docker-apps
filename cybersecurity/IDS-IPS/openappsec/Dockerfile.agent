@@ -1,8 +1,6 @@
 # Start with the openappsec agent image
 FROM ghcr.io/openappsec/agent:latest
 
-USER root
-
 # Remove any conflicting packages if already installed
 RUN apk del gd-dev || true
 
@@ -40,11 +38,11 @@ RUN apk add --no-cache \
 RUN mkdir -p /usr/lib/nginx/modules
 RUN mkdir -p /var/log/nginx
 
-# Download and extract Nginx 1.22.1 source
-RUN curl -O http://nginx.org/download/nginx-1.22.1.tar.gz && \
-   tar -xvzf nginx-1.22.1.tar.gz && \
+# Download and extract Nginx 1.25.4 source
+RUN curl -O http://nginx.org/download/nginx-1.25.4.tar.gz && \
+   tar -xvzf nginx-1.25.4.tar.gz && \
    git clone https://github.com/openresty/headers-more-nginx-module.git && \
-   cd nginx-1.22.1 && \
+   cd nginx-1.25.4 && \
    ./configure \
    --add-module=../headers-more-nginx-module \
    --with-http_ssl_module \
@@ -79,7 +77,7 @@ RUN curl -O http://nginx.org/download/nginx-1.22.1.tar.gz && \
 RUN ln -s /etc/nginx/sbin/nginx /usr/local/bin/nginx
 
 # Clean up build files
-RUN rm -rf nginx-1.22.1.tar.gz nginx-1.22.1
+RUN rm -rf nginx-1.25.4.tar.gz nginx-1.25.4
 
 ## Capture Nginx version and configuration
 RUN nginx -V 2> /tmp/nginx.ver

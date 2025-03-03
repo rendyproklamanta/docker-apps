@@ -1,17 +1,38 @@
 # Start with the openappsec agent image
 FROM randyproxz/openappsec-agent:nginx
 
-USER root
-
 # Set the Alpine repositories
-RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/main" > /etc/apk/repositories && \
-    echo "http://dl-cdn.alpinelinux.org/alpine/v3.15/community" >> /etc/apk/repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+
+# Install OpenSSL 1.1.1s
+WORKDIR /usr/src
+RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz && \
+    tar -xvzf openssl-1.1.1s.tar.gz && \
+    cd openssl-1.1.1s && \
+    ./config --prefix=/opt/build --openssldir=/opt/build shared -fPIC && \
+    make -j$(nproc) && \
+    make install
+
+# Set OpenSSL environment variables
+ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
+ENV OPENSSL_CONF=/opt/build/ssl/openssl.cnf
+
+# Install specific version of libxml2 compatible with PHP 7.4
+RUN wget http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
+    tar -xzf libxml2-2.9.12.tar.gz && \
+    cd libxml2-2.9.12 && \
+    ./configure --prefix=/usr --without-python && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && rm -rf libxml2-2.9.12 libxml2-2.9.12.tar.gz
 
 # Remove any conflicting packages if already installed
 RUN apk del boost icu || true
 
 # Update and install dependencies
 RUN apk update && apk add --no-cache \
+    alpine-sdk \
+    bash \
     build-base \
     libtool \
     freetds-dev \
@@ -55,29 +76,20 @@ RUN apk update && apk add --no-cache \
     enchant2 \
     gmp-dev \
     krb5-dev \
-    krb5-libs
-
-# Install OpenSSL 1.1.1s
-WORKDIR /usr/src
-RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz && \
-    tar -xvzf openssl-1.1.1s.tar.gz && \
-    cd openssl-1.1.1s && \
-    ./config --prefix=/opt/build --openssldir=/opt/build shared -fPIC && \
-    make -j$(nproc) && \
-    make install
-
-# Set OpenSSL environment variables
-ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
-ENV OPENSSL_CONF=/opt/build/ssl/openssl.cnf
-
-# Install specific version of libxml2 compatible with PHP 7.4
-RUN wget http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
-    tar -xzf libxml2-2.9.12.tar.gz && \
-    cd libxml2-2.9.12 && \
-    ./configure --prefix=/usr --without-python && \
-    make -j$(nproc) && \
-    make install && \
-    cd .. && rm -rf libxml2-2.9.12 libxml2-2.9.12.tar.gz
+    krb5-libs \
+    ldb-dev \
+    libldap \
+    openldap-dev \
+    cyrus-sasl-dev \
+    util-linux \
+    util-linux-dev \
+    musl-utils \
+    groff \
+    openssl-dev \
+    acl \
+    attr \
+    freetds \
+    freetds-dev
 
 # Install PHP 7.4.33 from source
 RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33.tar.gz && \
@@ -87,7 +99,6 @@ RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33
     CFLAGS="-Wno-deprecated-declarations -Wno-incompatible-pointer-types" ./configure \
         --prefix=/usr/local/php \
         --with-config-file-path=/usr/local/php \
-        --with-libdir=/usr/lib \
         --with-openssl=/opt/build \
         --enable-fpm \
         --enable-soap \
@@ -98,23 +109,53 @@ RUN curl -fsSL https://www.php.net/distributions/php-7.4.33.tar.gz -o php-7.4.33
         --enable-pcntl \
         --enable-cli \
         --enable-intl \
+        --enable-gd \
+        --enable-bcmath \
+        --enable-calendar \
+        --enable-dba \
+        --enable-exif \
+        --enable-ffi \
+        --enable-fileinfo \
+        --enable-filter \
+        --enable-ftp \
+        --enable-mbstring \
+        --enable-phar \
+        --enable-posix \
+        --enable-session \
+        --enable-shmop \
+        --enable-simplexml \
+        --enable-sysvmsg \
+        --enable-tidy \
+        --enable-tokenizer \
+        --enable-xml \
+        --enable-xmlreader \
+        --enable-xmlwriter \
+        --enable-zip \
+        --enable-spl \
+        --with-bz2 \
         --with-curl \
         --with-zlib \
         --with-mysqli \
-        --with-bz2 \
-        --with-xsl \
-        --with-icu-dir=/usr/include/icu \
+        --with-mysqlnd \
         --with-pdo-mysql \
         --with-pdo-pgsql \
+        --with-pdo-sqlite \
         --with-pgsql \
+        --with-iconv \
+        --with-gettext \
+        --with-gmp \
+        --with-libxml \
+        --with-xsl \
+        --with-icu-dir=/usr/include/icu \
         --with-redis \
-        --with-bz2 \
         --with-sodium \
         --with-imagick \
-        --with-zip \
-        --enable-gd \
         --with-jpeg \
         --with-freetype \
+        --with-odbc \
+        --with-standard \
+        --with-ldap \
+        --with-zip \
     && make -j$(nproc) && make install
 
 # Ensure www-data group and user exist, only add if missing
