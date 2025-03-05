@@ -1,11 +1,14 @@
 # Start with the openappsec agent image
 FROM randyproxz/openappsec-agent:nginx
 
+WORKDIR /usr/src
+
 # Set the Alpine repositories
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk update
+RUN apk add --no-cache make cmake perl
 
 # Install OpenSSL 1.1.1s
-WORKDIR /usr/src
 RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz && \
     tar -xvzf openssl-1.1.1s.tar.gz && \
     cd openssl-1.1.1s && \
@@ -14,8 +17,19 @@ RUN wget https://www.openssl.org/source/openssl-1.1.1s.tar.gz && \
     make install
 
 # Set OpenSSL environment variables
-ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
-ENV OPENSSL_CONF=/opt/build/ssl/openssl.cnf
+ENV PKG_CONFIG_PATH="/opt/build/lib/pkgconfig"
+ENV OPENSSL_CONF="/opt/build/ssl/openssl.cnf"
+ENV LD_LIBRARY_PATH="/opt/build/lib"
+
+# Ensure the library path is recognized
+RUN echo "export LD_LIBRARY_PATH=/opt/build/lib:\$LD_LIBRARY_PATH" >> /etc/profile
+
+# Rebuild curl with OpenSSL 1.1.1s
+RUN apk add --no-cache curl libcurl
+RUN wget https://curl.se/download/curl-8.12.1.tar.gz && \
+    tar -xzf curl-8.12.1.tar.gz && cd curl-8.12.1 && \
+    ./configure --with-openssl=/opt/build --prefix=/usr --disable-static && \
+    make -j$(nproc) && make install
 
 # Install specific version of libxml2 compatible with PHP 7.4
 RUN wget http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
@@ -30,12 +44,11 @@ RUN wget http://xmlsoft.org/sources/libxml2-2.9.12.tar.gz && \
 RUN apk del boost icu || true
 
 # Update and install dependencies
-RUN apk update && apk add --no-cache \
+RUN apk add --no-cache \
     alpine-sdk \
     bash \
     build-base \
     libtool \
-    freetds-dev \
     libcouchbase-dev \
     imap-dev \
     libevent-dev \
@@ -54,7 +67,6 @@ RUN apk update && apk add --no-cache \
     zlib-dev \
     libxslt-dev \
     libxml2-dev \
-    curl-dev \
     libsodium-dev \
     oniguruma-dev \
     icu-dev \
@@ -63,10 +75,8 @@ RUN apk update && apk add --no-cache \
     libmemcached-dev \
     gcc \
     g++ \
-    make \
     autoconf \
     pkgconfig \
-    cmake \
     pcre-dev \
     pcre2-dev \
     linux-headers \
