@@ -1,18 +1,24 @@
-# Build your PHP application with PHP-FPM (alpine)
 FROM php:8.1-fpm-alpine
 
 USER root
 
-ENV COMPOSER_CACHE_DIR /tmp
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install mandatory
+# Set the Alpine repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk update
-RUN apk add --no-cache fcgi busybox wget bash supervisor tzdata git nginx
 
-# Install required library for extensions
+# Base system tools & dependencies
 RUN apk add --no-cache \
+    bash \
+    supervisor \
+    tzdata \
+    git \
+    nginx \
+    fcgi \
+    busybox \
+    wget \
+    curl \
+    icu-libs \
+    icu-dev \
     libpng \
     libpng-dev \
     libjpeg-turbo \
@@ -23,76 +29,127 @@ RUN apk add --no-cache \
     libzip-dev \
     zlib \
     zlib-dev \
-    libxslt-dev \
     libxml2 \
     libxml2-dev \
+    libxslt-dev \
     curl-dev \
-    openssl-dev \
     libsodium-dev \
     oniguruma-dev \
-    icu-libs \
-    icu-dev \
     g++ \
-    gettext-dev \
-    bzip2-dev \
-    libmemcached-dev \
-    dcron \
     gcc \
-    g++ \
     make \
     autoconf \
     libc-dev \
     pkgconfig \
     cmake \
+    gettext-dev \
+    bzip2-dev \
+    libmemcached-dev \
+    dcron \
     pcre-dev \
     geoip-dev \
     linux-headers \
     python3 \
     perl-dev \
+    postgresql-dev \
+    libpq-dev \
     gd-dev \
-    && rm -rf /var/cache/apk/*
+    libmcrypt-dev \
+    tidyhtml-dev \
+    libffi-dev \
+    libldap \
+    openldap-dev \
+    gmp \
+    gmp-dev \
+    imagemagick \
+    imagemagick-dev \
+    libtool \
+    icu-data-full \
+    icu \
+    sqlite-dev
 
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-
-# Install PHP extensions
-RUN docker-php-ext-install \
-    mysqli pdo pdo_mysql \
-    intl \
-    zip \
-    mbstring \
+# Install core PHP extensions
+RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
+    bcmath \
+    bz2 \
+    calendar \
     curl \
+    dba \
+    exif \
+    fileinfo \
+    ftp \
     gd \
-    xml \
+    gettext \
+    intl \
+    mbstring \
+    mysqli \
+    opcache \
+    pcntl \
+    pdo \
+    pdo_mysql \
+    pdo_pgsql \
+    pgsql \
+    shmop \
+    simplexml \
     soap \
     sockets \
     sodium \
-    opcache \
-    bcmath \
-    pcntl
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    dom \
+    xml \
+    xmlreader \
+    xmlwriter \
+    xsl \
+    zip \
+    ffi \
+    gmp \
+    ldap \
+    phar \
+    posix \
+    tidy \
+    pdo_sqlite \
+    ldap
 
-# Install MongoDB PHP driver
-RUN pecl install mongodb && docker-php-ext-enable mongodb
+# PHP extension configuration
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 
-# Install PostgreSQL extension
-RUN apk add --no-cache postgresql-dev libpq-dev \
-    && docker-php-ext-install pdo_pgsql pgsql
-    
-# Install mcrypt
+# Install PECL extensions
+RUN pecl install \
+    mongodb \
+    redis \
+    imagick
+RUN docker-php-ext-enable \
+    mongodb \
+    redis \
+    imagick
+
+# Install mcrypt via PECL (legacy support)
 ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
-RUN apk --no-cache add libmcrypt-dev \
-    && docker-php-source extract \
+RUN docker-php-source extract \
     && pecl install /tmp/mcrypt.tgz \
     && docker-php-ext-enable mcrypt \
-    && docker-php-source delete
+    && docker-php-source delete \
+    && rm /tmp/mcrypt.tgz
 
-# Download and install OpenAppSec
-RUN nginx -V &> /tmp/nginx.ver
-RUN git clone https://github.com/openappsec/attachment.git attachment
-WORKDIR attachment
-RUN chmod +x attachments/nginx/ngx_module/nginx_version_configuration.sh
-RUN attachments/nginx/ngx_module/nginx_version_configuration.sh --conf /tmp/nginx.ver build_out
-RUN cmake -DCMAKE_INSTALL_PREFIX=build_out .
-RUN make install
-RUN make package
+# Install Composer
+RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer && chmod +x /usr/local/bin/composer
+
+# Ensure www-data group and user exist, only add if missing
+RUN getent group www-data || addgroup -S www-data && \
+    getent passwd www-data || adduser -S www-data -G www-data
+    
+# Set up PHP-FPM configuration
+RUN mkdir -p /run/php /var/log/php
+COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# Cleanup
+RUN rm -rf /var/cache/apk/*
 
 CMD ["/usr/local/sbin/php-fpm", "-F"]
+
+## BUILD and PUSH -----------------
+## docker build -t randyproxz/php8.1-fpm:alpine -f Dockerfile.php81-fpm-alpine .
+## docker push randyproxz/php8.1-fpm:alpine
+## --------------------------------

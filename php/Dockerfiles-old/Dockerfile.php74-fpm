@@ -75,14 +75,4 @@ RUN pecl install mongodb && docker-php-ext-enable mongodb
 ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
 RUN pecl install /tmp/mcrypt.tgz && docker-php-ext-enable mcrypt && rm -f /tmp/mcrypt.tgz
 
-# Download and install OpenAppSec
-RUN nginx -v 2> /tmp/nginx.ver
-RUN git clone https://github.com/openappsec/attachment.git attachment
-WORKDIR attachment
-RUN chmod +x attachments/nginx/ngx_module/nginx_version_configuration.sh
-RUN attachments/nginx/ngx_module/nginx_version_configuration.sh --conf /tmp/nginx.ver build_out
-RUN cmake -DCMAKE_INSTALL_PREFIX=build_out .
-RUN make install
-RUN make package
-
 CMD ["/usr/local/sbin/php-fpm", "-F"]
