@@ -1,0 +1,33 @@
+services:
+  traefik:
+    image: traefik:v2
+    command:
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.forwardedHeaders.insecure=true"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - bridge
+
+  labelstudio:
+    image: heartexlabs/label-studio:latest
+    volumes:
+      - ./data:/label-studio/data
+    environment:
+      - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/data
+      - LABEL_STUDIO_USERNAME=admin@example.com
+      - LABEL_STUDIO_PASSWORD=securepassword
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.development.rule=Host(`label-studio.localhost`)"
+      - "traefik.http.services.development.loadbalancer.server.port=8080"
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
