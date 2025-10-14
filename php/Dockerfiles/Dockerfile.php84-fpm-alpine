@@ -1,0 +1,163 @@
+FROM php:8.4-fpm-alpine
+
+USER root
+
+# Set the Alpine repositories
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk update
+
+# Base system tools & dependencies
+RUN apk add --no-cache \
+    bash \
+    supervisor \
+    tzdata \
+    git \
+    nginx \
+    fcgi \
+    busybox \
+    wget \
+    curl \
+    icu-libs \
+    icu-dev \
+    libpng \
+    libpng-dev \
+    libjpeg-turbo \
+    libjpeg-turbo-dev \
+    freetype \
+    freetype-dev \
+    libzip \
+    libzip-dev \
+    zlib \
+    zlib-dev \
+    libxml2 \
+    libxml2-dev \
+    libxslt-dev \
+    curl-dev \
+    libsodium-dev \
+    oniguruma-dev \
+    g++ \
+    gcc \
+    make \
+    autoconf \
+    libc-dev \
+    pkgconfig \
+    cmake \
+    gettext-dev \
+    bzip2-dev \
+    libmemcached-dev \
+    dcron \
+    pcre-dev \
+    geoip-dev \
+    linux-headers \
+    python3 \
+    perl-dev \
+    postgresql-dev \
+    libpq-dev \
+    gd-dev \
+    libmcrypt-dev \
+    tidyhtml-dev \
+    libffi-dev \
+    libldap \
+    openldap-dev \
+    gmp \
+    gmp-dev \
+    imagemagick \
+    imagemagick-dev \
+    libtool \
+    icu-data-full \
+    icu \
+    sqlite-dev
+
+# Install core PHP extensions
+RUN CFLAGS="-I/usr/src/php" docker-php-ext-install -j$(nproc) \
+    bcmath \
+    bz2 \
+    calendar \
+    curl \
+    dba \
+    exif \
+    fileinfo \
+    ftp \
+    gd \
+    gettext \
+    intl \
+    mbstring \
+    mysqli \
+    opcache \
+    pcntl \
+    pdo \
+    pdo_mysql \
+    pdo_pgsql \
+    pgsql \
+    shmop \
+    simplexml \
+    soap \
+    sockets \
+    sodium \
+    sysvmsg \
+    sysvsem \
+    sysvshm \
+    dom \
+    xml \
+    xmlreader \
+    xmlwriter \
+    xsl \
+    zip \
+    ffi \
+    gmp \
+    posix \
+    tidy \
+    pdo_sqlite \
+    ldap
+
+# PHP extension configuration
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+
+# Install PECL extensions
+RUN pecl install \
+    mongodb \
+    redis \
+    imagick
+RUN docker-php-ext-enable \
+    mongodb \
+    redis \
+    imagick
+
+# Install mcrypt (legacy support)
+RUN git clone https://github.com/php/pecl-encryption-mcrypt.git /tmp/mcrypt \
+    && cd /tmp/mcrypt \
+    && phpize \
+    && ./configure --with-php-config=/usr/local/bin/php-config \
+    && make && make install \
+    && docker-php-ext-enable mcrypt \
+    && rm -rf /tmp/mcrypt
+
+# Install Composer
+RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer && chmod +x /usr/local/bin/composer
+
+# Ensure www-data user and group exist, if not already created
+RUN getent group www-data || addgroup -S www-data && \
+   getent passwd www-data || adduser -S www-data -G www-data
+
+# Ensure www-data user and group exist
+RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+RUN mkdir -p /var/log/php
+RUN mkdir -p /var/log/nginx
+
+# Copy www.conf to container
+COPY ./conf/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Create symbolic links for PHP 8.4 binaries
+RUN ln -s /usr/local/sbin/php-fpm /usr/sbin/php-fpm
+RUN ln -s /usr/local/bin/php /usr/bin/php
+
+# Cleanup
+RUN rm -rf /var/cache/apk/*
+
+CMD ["php-fpm", "-F"]
+
+## BUILD and PUSH -----------------
+## docker build -t randyproxz/php8.4-fpm:alpine -f Dockerfile.php84-fpm-alpine .
+## docker run --rm -it randyproxz/php8.4-fpm:alpine sh
+## docker push randyproxz/php8.4-fpm:alpine
+## --------------------------------
