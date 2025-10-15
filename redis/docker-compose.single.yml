@@ -1,0 +1,14 @@
+services:
+  redis:
+    image: redis
+    command: redis-server --requirepass my_password
+    volumes:
+      - ./data:/var/lib/redis
+    ports:
+      - 63796:6379
+    networks:
+      - redis-network
+
+networks:
+  redis-network:
+    external: true
