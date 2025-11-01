@@ -139,17 +139,27 @@ RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer &&
 # Ensure www-data group and user exist, only add if missing
 RUN getent group www-data || addgroup -S www-data && \
     getent passwd www-data || adduser -S www-data -G www-data
-    
+
+# Create necessary directories and set permissions
+RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
+RUN mkdir -p /var/log/php && chown -R www-data:www-data /var/log/php
+RUN mkdir -p /var/log/nginx
+
 # Set up PHP-FPM configuration
-RUN mkdir -p /run/php /var/log/php
 COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./conf/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Create symbolic links for PHP binaries
+RUN ln -s /usr/local/sbin/php-fpm /usr/sbin/php-fpm
+RUN ln -s /usr/local/bin/php /usr/bin/php
 
 # Cleanup
 RUN rm -rf /var/cache/apk/*
 
-CMD ["/usr/local/sbin/php-fpm", "-F"]
+CMD ["php-fpm", "-F"]
 
 ## BUILD and PUSH -----------------
-## docker build -t randyproxz/php7.4-fpm:alpine -f Dockerfile.php74-fpm-alpine-old .
+## docker build -t randyproxz/php7.4-fpm:alpine -f Dockerfile.php74-fpm-alpine .
+## docker run --rm -it randyproxz/php7.4-fpm:alpine sh
 ## docker push randyproxz/php7.4-fpm:alpine
 ## --------------------------------

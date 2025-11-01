@@ -151,5 +151,6 @@ CMD ["/usr/local/sbin/php-fpm", "-F"]
 
 ## BUILD and PUSH -----------------
 ## docker build -t randyproxz/php8.1-fpm:alpine -f Dockerfile.php81-fpm-alpine .
+## docker run --rm -it randyproxz/php8.1-fpm:alpine sh
 ## docker push randyproxz/php8.1-fpm:alpine
 ## --------------------------------
