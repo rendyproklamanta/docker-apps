@@ -1,0 +1,114 @@
+services:
+  db:
+    image: supabase/postgres:15.8.1.060
+    env_file:
+      - ./supabase.env
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supabase_user -d supabase_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+      
+  meta:
+    image: supabase/postgres-meta:v0.68.0
+    env_file:
+      - ./supabase.env
+    deploy:
+      replicas: 1
+    networks:
+      - internal
+
+  rest:
+    image: postgrest/postgrest:v12.0.2
+    env_file:
+      - ./supabase.env
+    deploy:
+      replicas: 1
+    networks:
+      - internal
+
+  auth:
+    image: supabase/gotrue:v2.182.1
+    env_file:
+      - ./supabase.env
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.lbswarm=true"
+        - "traefik.docker.network=traefik-network"
+        - "traefik.http.routers.auth-http.rule=Host(`auth.supabase.starasukses.id`)"
+        - "traefik.http.routers.auth-http.entrypoints=web"
+        - "traefik.http.routers.auth.rule=Host(`auth.supabase.starasukses.id`)"
+        - "traefik.http.routers.auth.entrypoints=websecure"
+        - "traefik.http.routers.auth.tls=true"
+        - "traefik.http.routers.auth.tls.options=default"
+        - "traefik.http.routers.auth.tls.certresolver=le"
+        - "traefik.http.services.auth.loadbalancer.server.port=9999"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.routers.auth-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.auth.middlewares=headers-default@file"
+    networks:
+      - traefik-network
+      - internal
+
+  realtime:
+    image: supabase/realtime:v2.57.2
+    env_file:
+      - ./supabase.env
+    deploy:
+      replicas: 1
+    networks:
+      - internal
+
+  storage:
+    image: supabase/storage-api:v0.27.0
+    env_file:
+      - ./supabase.env
+    volumes:
+      - ./data/storage:/var/lib/storage
+    deploy:
+      replicas: 1
+    networks:
+      - internal
+
+  studio:
+    image: ghcr.io/supabase/studio:2025.12.01-sha-4ad48b7
+    env_file:
+      - ./supabase.env
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.lbswarm=true"
+        - "traefik.docker.network=traefik-network"
+        - "traefik.http.routers.studio-http.rule=Host(`studio.supabase.starasukses.id`)"
+        - "traefik.http.routers.studio-http.entrypoints=web"
+        - "traefik.http.routers.studio.rule=Host(`studio.supabase.starasukses.id`)"
+        - "traefik.http.routers.studio.entrypoints=websecure"
+        - "traefik.http.routers.studio.tls=true"
+        - "traefik.http.routers.studio.tls.options=default"
+        - "traefik.http.routers.studio.tls.certresolver=le"
+        - "traefik.http.services.studio.loadbalancer.server.port=3000"
+        - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+        - "traefik.http.routers.studio-http.middlewares=redirect-to-https"
+        - "traefik.http.routers.studio.middlewares=headers-default@file"
+    networks:
+      - traefik-network
+      - internal
+
+networks:
+  traefik-network:
+    external: true
+  internal:
+    driver: overlay

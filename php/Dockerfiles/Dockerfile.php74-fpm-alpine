@@ -78,7 +78,6 @@ RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
     exif \
     fileinfo \
     ftp \
-    gd \
     gettext \
     intl \
     mbstring \
@@ -110,11 +109,11 @@ RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
     phar \
     posix \
     tidy \
-    pdo_sqlite \
-    ldap
+    pdo_sqlite
 
 # PHP extension configuration
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd
 
 # Install PECL extensions
 RUN pecl install \
@@ -145,6 +144,13 @@ RUN getent group www-data || addgroup -S www-data && \
 RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
 RUN mkdir -p /var/log/php && chown -R www-data:www-data /var/log/php
 RUN mkdir -p /var/log/nginx
+
+# Nginx permission
+RUN chown -R www-data:www-data \
+    /var/lib/nginx \
+    /run/nginx \
+    /var/log/nginx
+RUN chmod -R 755 /var/lib/nginx
 
 # Set up PHP-FPM configuration
 COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
