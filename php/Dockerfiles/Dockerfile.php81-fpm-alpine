@@ -66,10 +66,14 @@ RUN apk add --no-cache \
     libtool \
     icu-data-full \
     icu \
-    sqlite-dev
+    nginx-mod-http-headers-more \
+    sqlite-dev \
+    php81-pecl-mongodb \
+    php81-pecl-redis \
+    php81-pecl-imagick
 
 # Install core PHP extensions
-RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
+RUN CFLAGS="-I/usr/src/php" docker-php-ext-install -j$(nproc) \
     bcmath \
     bz2 \
     calendar \
@@ -104,7 +108,6 @@ RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
     zip \
     ffi \
     gmp \
-    phar \
     posix \
     tidy \
     pdo_sqlite \
@@ -114,34 +117,25 @@ RUN CFLAGS="-I/usr/src/php" docker-php-ext-install \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd
 
-# Install PECL extensions
-RUN pecl install \
-    mongodb \
-    redis \
-    imagick
-RUN docker-php-ext-enable \
-    mongodb \
-    redis \
-    imagick
-
-# Install mcrypt via PECL (legacy support)
-ADD https://pecl.php.net/get/mcrypt-1.0.6.tgz /tmp/mcrypt.tgz
-RUN docker-php-source extract \
-    && pecl install /tmp/mcrypt.tgz \
+# Install mcrypt (legacy support)
+RUN git clone https://github.com/php/pecl-encryption-mcrypt.git /tmp/mcrypt \
+    && cd /tmp/mcrypt \
+    && phpize \
+    && ./configure --with-php-config=/usr/local/bin/php-config \
+    && make && make install \
     && docker-php-ext-enable mcrypt \
-    && docker-php-source delete \
-    && rm /tmp/mcrypt.tgz
+    && rm -rf /tmp/mcrypt
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/composer.phar -o /usr/local/bin/composer && chmod +x /usr/local/bin/composer
 
-# Ensure www-data group and user exist, only add if missing
+# Ensure www-data user and group exist, if not already created
 RUN getent group www-data || addgroup -S www-data && \
-    getent passwd www-data || adduser -S www-data -G www-data
-    
-# Create necessary directories and set permissions
+   getent passwd www-data || adduser -S www-data -G www-data
+
+# Ensure www-data user and group exist
 RUN mkdir -p /run/php && chown -R www-data:www-data /run/php
-RUN mkdir -p /var/log/php && chown -R www-data:www-data /var/log/php
+RUN mkdir -p /var/log/php
 RUN mkdir -p /var/log/nginx
 
 # Nginx permission
@@ -151,13 +145,18 @@ RUN chown -R www-data:www-data \
     /var/log/nginx
 RUN chmod -R 755 /var/lib/nginx
 
-# Set up PHP-FPM configuration
+# Copy www.conf to container
 COPY ./conf/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./conf/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
+# Create symbolic links for PHP 8.1 binaries
+RUN ln -s /usr/local/sbin/php-fpm /usr/sbin/php-fpm
+RUN ln -s /usr/local/bin/php /usr/bin/php
 
 # Cleanup
 RUN rm -rf /var/cache/apk/*
 
-CMD ["/usr/local/sbin/php-fpm", "-F"]
+CMD ["php-fpm", "-F"]
 
 ## BUILD and PUSH -----------------
 ## docker build -t randyproxz/php8.1-fpm:alpine -f Dockerfile.php81-fpm-alpine .
