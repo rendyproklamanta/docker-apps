@@ -1,5 +1,7 @@
 FROM php:8.4-fpm-alpine
 
+ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 USER root
 
 # Set the Alpine repositories
